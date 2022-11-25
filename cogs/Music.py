@@ -47,10 +47,17 @@ class Music(commands.Cog):
     autoplay_ = False
     GOOGLE_API_KEY = config['GOOGLE_API_KEY']
     youtube = build('youtube', 'v3', developerKey=GOOGLE_API_KEY)
+    max_duration = None
 
-    @commands.command(name='play', description='Plays a song')
+    @commands.command(name='play', usage='play [song name]')
     async def play(self, ctx, *, query):
-        """Play a song."""
+        """Plays a song from youtube.
+
+        Parameters
+        ----------
+        Song name: str
+            The name of the song to play.
+        """
         #Get playable object from query
         track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
 
@@ -89,14 +96,19 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_wavelink_track_end(self, player: wavelink.Player, track: wavelink.Track, reason: str):
         """Event fired when a track has finished playing."""
-        if self.queue.is_empty and reason == 'FINISHED':
+        if self.queue.is_empty:
             return await player.disconnect()
         await player.play(self.queue.pop())
         await self.now_playing_embed(player, 1, self.play_tracking_message)
         
-    @commands.command(name='skip', description='Skips the current song')
+    @commands.command(name='skip')
     async def skip(self, ctx):
-        """Skip a song."""
+        """Skips the current song.
+
+        Parameters
+        ----------
+
+        """
         vc: wavelink.Player = ctx.voice_client
         if not vc.is_playing():
             return await ctx.send('I am not playing anything right now.')
@@ -106,17 +118,27 @@ class Music(commands.Cog):
             await vc.seek(vc.track.length * 1000)
             await ctx.send('Skipped the current song.')
             if vc.is_paused:
-                vc.resume()
+                await vc.resume()
 
-    @commands.hybrid_command(name='playing', description='Shows the current song', with_app_command=True)
+    @commands.hybrid_command(name='playing', with_app_command=True, aliases=['song', 'np'])
     async def playing(self, ctx):
-        """Shows the current song."""
+        """Displays the song that is currently playing.
+
+        Parameters
+        ----------
+
+        """
         vc: wavelink.Player = ctx.voice_client
         await self.now_playing_embed(ctx.voice_client)
 
-    @commands.command(name='pause', description='Pauses the current song')
+    @commands.command(name='pause', aliases=['stop'])
     async def pause(self, ctx):
-        """Pause a song."""
+        """Pauses the current player.
+
+        Parameters
+        ----------
+
+        """
         vc: wavelink.Player = ctx.voice_client
         if not vc.is_playing():
             return await ctx.send('I am not playing anything right now.')
@@ -125,7 +147,12 @@ class Music(commands.Cog):
 
     @commands.command(name='resume', description='Resumes the current song')
     async def resume(self, ctx):
-        """Resume a song."""
+        """Resumes the current player.
+
+        Parameters
+        ----------
+
+        """
         vc: wavelink.Player = ctx.voice_client
         if not vc.is_playing():
             return await ctx.send('I am not playing anything right now.')
@@ -134,9 +161,15 @@ class Music(commands.Cog):
         await vc.resume()
         await ctx.send('Resumed the current song.')
 
-    @commands.hybrid_command(name='seek', description='Seeks to a position in the current song', with_app_command=True)
+    @commands.hybrid_command(name='seek', with_app_command=True)
     async def seek(self, ctx, position: int):
-        """Seek to a position in the current song."""
+        """Seek to a position in the current song.
+
+        Parameters
+        ----------
+        position: int
+            The position in seconds to seek to
+        """
         vc: wavelink.Player = ctx.voice_client
         if not vc.is_playing():
             return await ctx.send('I am not playing anything right now.')
@@ -146,16 +179,37 @@ class Music(commands.Cog):
         seek = position
         await self.now_playing_embed(ctx.voice_client, int(seek), self.play_tracking_message)
     
-    @commands.command(name='queue', description='Shows the current queue')
+    @commands.command(name='queue', aliases=['q', 'cue', 'qu'])
     async def queued(self, ctx):
-        """Shows the current queue."""
+        """Displays the current song queue.
+
+        Parameters
+        ----------
+
+        """
         vc: wavelink.Player = ctx.voice_client
         if self.queue.is_empty:
             return await ctx.send('The queue is empty.')
         queue = self.queue
-        embed = discord.Embed(title='Queue', color=discord.Color.green())
-        for i, track in enumerate(queue):
-            embed.add_field(name=f'{i + 1}. {track.title}', value=f'Duration: {track.duration}')
+        total_time_in_queue = 0
+        for track in self.queue:
+            total_time_in_queue += track.duration
+        embed = discord.Embed(
+                type="rich",
+                title=f"Now Playing: {vc.track.title}",
+                description=f"Total queued time: {str(datetime.timedelta(seconds=total_time_in_queue))}\n\nUp next:",
+                color=discord.Color.random(),
+                timestamp=datetime.datetime.now(),
+                url=f"{vc.track.uri}"
+            )
+        for count, song in enumerate(self.queue):
+                embed.add_field(
+                    name=f"{count+1}) {song}",
+                    value=f"Duration: {str(datetime.timedelta(seconds=song.duration))}",
+                    inline=True
+                )
+        thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
+        embed.set_thumbnail(url=f"{thumb}")
         await ctx.send(embed=embed)
 
     async def now_playing_embed(self, voice_player, seeked_to = None, play_tracking_message = None):
@@ -173,7 +227,8 @@ class Music(commands.Cog):
             current_seconds = datetime.timedelta(seconds=0)
         
         embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
-        embed.set_thumbnail(url=vc.track.thumb)
+        thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
+        embed.set_thumbnail(url=f"{thumb}")
         msg = await music_channel.send(embed=embed)
         self.play_tracking_message = msg
         self.play_tracking = True
@@ -186,16 +241,56 @@ class Music(commands.Cog):
                 break
             await asyncio.sleep(0.9)
 
-    @commands.command(name='autoplay', description='Toggles autoplay')
-    async def autoplay_toggle(self, ctx):
-        """Toggle autoplay."""
+    @commands.command(name='autoplay')
+    async def autoplay_toggle(self, ctx, max_duration: int = None):
+        """Toggles autoplay on or off. If on, the bot will automatically find songs related to the current song and add them to the queue. 
+        If a max duration is specified, the bot will ONLY add songs that are shorter than the specified duration.
+
+        You MUST pass a google api key to the bot for this to work. You can get one here: https://developers.google.com/youtube/v3/getting-started. 
+        Once you have your key, run the command `!set google_api_key <your key here>`. You will only need to do this once but you may update it as much as you would like. 
+
+        Each key has a quota of 10,000 units per day. Each call to the API is 100 units. If you are using the bot in a large server, you may want to consider getting a key with a higher quota.
+
+        when autoplay is turned on, the bot will check to make sure the key is valid, this will use 100 units. 
+
+        The bot will add 2-6 songs to the queue at a time. Each time this is done it will only use 100 units. When the queue reaches 2 songs left, it will add another 2-6 songs, using another 100 units.
+
+        If autoplay is used once and playing songs consecutively, you should be able to get around 200-500 songs in a day.
+
+        Parameters
+        ----------
+        Max song duration: int
+            The maximum duration of songs to add to the queue automatically 
+        """
+
+        enabled_message = 'Autoplay has been enabled.'
+        
+
+        if max_duration:
+            max_duration = max_duration * 60
+            self.max_duration = max_duration
+            enabled_message += f' Songs will be limited to {int(max_duration/60)} minutes.'
+
         if self.autoplay_:
             self.autoplay_ = False
             await ctx.send('Autoplay has been disabled.')
+            self.queue.clear()
         else:
             self.autoplay_ = True
             if await self.check_api_key():
-                await ctx.send('Autoplay has been enabled.')
+                await ctx.send(enabled_message)
+                if ctx.voice_client.is_playing():
+                    vc: wavelink.Player = ctx.voice_client
+                    track = vc.track
+                    for related_video in await self.get_related_videos(track.identifier):
+                        try:                            
+                            track = await wavelink.YouTubeTrack.search("https://www.youtube.com/watch?v=" + related_video, return_first=True)
+                            if max_duration and track.length <= max_duration:
+                                self.queue.put(track)
+                            elif not max_duration:
+                                self.queue.put(track)
+                        except :
+                            print("Couldn't add related video to queue.")
             elif not self.GOOGLE_API_KEY:
                 await ctx.send('You need to set an API key to use this command.')
                 self.autoplay_ = False
@@ -224,6 +319,7 @@ class Music(commands.Cog):
                         part='snippet',
                         relatedToVideoId=str(video_id),
                         type="video",
+                        relevanceLanguage="en",
                     )
         response = request.execute()
         ls_ids = []
@@ -235,15 +331,78 @@ class Music(commands.Cog):
     async def on_wavelink_track_start(self, player: wavelink.Player, track: wavelink.Track):
         """Track start event."""
         print("track started")
-        if self.autoplay_:
+        if self.autoplay_ and self.queue.count <= 2:
             for related_video in await self.get_related_videos(track.identifier):
                 try:
                     track = await wavelink.YouTubeTrack.search("https://www.youtube.com/watch?v=" + related_video, return_first=True)
-                    self.queue.put(track)
+                    if self.max_duration and track.duration <= self.max_duration:
+                        self.queue.put(track)
+                    elif not self.max_duration:
+                        self.queue.put(track)
                 except :
                     print("Couldn't add related video to queue.")
         else:
             return
+
+    @commands.command(name='clear')
+    async def clear_queue(self, ctx):
+        """Clears the current queue.
+
+        Parameters
+        ----------
+
+        """
+        self.queue.clear()
+        await ctx.send('Cleared the queue.')
+    
+    @commands.command(name='disconnect', aliases=['dc', 'leave'])
+    async def disconnect(self, ctx):
+        """Disconnects the bot from its current voice channel and clears the queue.
+
+        Parameters
+        ----------
+
+        """
+        vc: wavelink.Player = ctx.voice_client
+        if not vc:
+            return await ctx.send('I am not connected to a voice channel.')
+        await vc.disconnect()
+        await ctx.send('Disconnected from the voice channel.')
+        self.queue.clear()
+    
+    @commands.command(name='volume', aliases=['vol'])
+    async def volume(self, ctx, volume: int):
+        """Sets the volume of the bot's player.
+
+        Parameters
+        ----------
+        volume: int
+            The volume to set the player to. Must be between 1 and 100.
+        """
+        vc: wavelink.Player = ctx.voice_client
+        if not vc:
+            return await ctx.send('I am not connected to a voice channel.')
+        if not 0 < volume < 101:
+            return await ctx.send('Please enter a value between 1 and 100.')
+        await vc.set_volume(volume)
+        await ctx.send(f'Set the volume to {volume}.')
+    @commands.command(name='join', aliases=['connect'])
+    async def join(self, ctx):
+        """Connects the bot to whichever voice channel you are in.
+
+        Parameters
+        ----------
+
+        """
+        vc: wavelink.Player = ctx.voice_client
+        if not vc:
+            try:
+                await ctx.author.voice.channel.connect(cls=wavelink.Player)
+            except:
+                return await ctx.send('I am not connected to a voice channel.')
+        else:
+            await vc.move_to(ctx.author.voice.channel)
+        await ctx.send(f'Joined {ctx.author.voice.channel}.')
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
