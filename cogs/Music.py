@@ -91,7 +91,7 @@ class Music(commands.Cog):
             self.context = ctx
         else:
             self.queue.put(track)
-            await ctx.send(embed=embed)
+            await ctx.send(content="Added to queue:", embed=embed)
     
     @commands.Cog.listener()
     async def on_wavelink_track_end(self, player: wavelink.Player, track: wavelink.Track, reason: str):
@@ -229,7 +229,7 @@ class Music(commands.Cog):
         embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
         thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
         embed.set_thumbnail(url=f"{thumb}")
-        msg = await music_channel.send(embed=embed)
+        msg = await music_channel.send(content="Now playing:", embed=embed)
         self.play_tracking_message = msg
         self.play_tracking = True
         while datetime.timedelta(seconds=int(vc.position)) < datetime.timedelta(seconds=vc.track.length):

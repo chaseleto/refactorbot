@@ -8,7 +8,7 @@ import discord
 
 class TypeGame(commands.Cog):
     
-    timer = 11
+    timer = 30
     starttime = None
     current_game = False
     entry = None
@@ -57,12 +57,12 @@ class TypeGame(commands.Cog):
         embed = discord.Embed(title=f"Scores", color=0x00ff00)
     
         for user in self.scores:
-            embed.add_field(name=user.display_name, value=f"Score: {self.scores[user]['pct']}\nTime: {int(self.scores[user]['time'])} seconds", inline=False)
+            embed.add_field(name=user.display_name, value=f"Score: {self.scores[user]['pct']}%\nTime: {int(self.scores[user]['time'])} seconds", inline=False)
         await ctx.send(embed=embed)
         
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot or message.channel != self.game_channel or message.content.startswith('!'):
+        if message.author.bot or message.channel != self.game_channel or message.content.startswith('!') or message.author in self.scores:
             return
         if self.current_game:
             dist = distance(self.entry, message.content)
