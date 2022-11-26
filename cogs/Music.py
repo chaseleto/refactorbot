@@ -6,6 +6,9 @@ import datetime
 import asyncio
 import yaml
 from googleapiclient.discovery import build
+from pymongo import MongoClient
+import urllib.parse
+import os
 
 class Music(commands.Cog):
 
@@ -17,7 +20,11 @@ class Music(commands.Cog):
         
     with open('config/cfg.yml', 'r') as f:
         config = yaml.safe_load(f)
-        
+    
+    mg = MongoClient('34.171.240.203', 27017,
+                 username=os.environ['MONGO_USER'],
+                 password=os.environ['MONGO_PASSWORD'])
+
     async def connect_nodes(self):
         """Connect to our Lavalink nodes."""
         await self.bot.wait_until_ready()
@@ -45,7 +52,7 @@ class Music(commands.Cog):
     play_tracking_message = None
     music_channel = config['temp_music_channel']
     autoplay_ = False
-    GOOGLE_API_KEY = config['GOOGLE_API_KEY']
+    GOOGLE_API_KEY = None
     youtube = build('youtube', 'v3', developerKey=GOOGLE_API_KEY)
     max_duration = None
 
@@ -552,6 +559,18 @@ class Music(commands.Cog):
         elif reaction.emoji == "⏭":
             print("attempting to skip to end")
             await vc.seek(vc.track.duration * 1000)
+    @commands.command(name='pass_api_key')
+    async def pass_api_key(self, ctx, *, api_key: str):
+        """Passes the API key to the bot.
 
+        Parameters
+        ----------
+        api_key: str
+            The API key to pass to the bot.
+        """
+        self.GOOGLE_API_KEY = api_key
+        await ctx.send("API key passed.")
+
+        
 async def setup(bot):
     await bot.add_cog(Music(bot))

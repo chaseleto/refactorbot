@@ -4,6 +4,8 @@ import asyncio
 import logging
 import os
 import yaml
+from pymongo import MongoClient
+import datetime
 
 # Logging
 logger = logging.getLogger('discord')
@@ -15,6 +17,11 @@ logger.addHandler(handler)
 #config
 with open('config/cfg.yml', 'r') as f:
     config = yaml.safe_load(f)
+
+#MongoDB
+mg = MongoClient('34.171.240.203', 27017,
+                username=os.environ['MONGO_USER'],
+                password=os.environ['MONGO_PASSWORD'])
 
 # Bot
 bot = commands.Bot(command_prefix=config['Bot_prefix'], description='SER Bot refactored.', case_insensitive=True, owner_id=238047264839303179, intents=discord.Intents.all())
@@ -34,7 +41,8 @@ async def on_message(message):
     await bot.process_commands(message)
 @bot.event
 async def on_guild_join(guild):
-    #database implementation here
+    collection = mg['discord']['guilds']
+    collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_region': guild.region, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None})
     print(f'Joined {guild.name} ({guild.id})')
 
 #When login is successful
