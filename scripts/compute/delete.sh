@@ -1,0 +1,1 @@
+gcloud compute instances delete discordbot --project=pragmatic-ruler-369222 --zone=us-central1-a --quiet

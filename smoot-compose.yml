@@ -1,0 +1,32 @@
+services:
+  lavalink:
+    image: fredboat/lavalink:master
+    volumes:
+      - ./application.yml:/opt/Lavalink/application.yml
+    expose: ["2333"]
+    tty:
+      true
+  discordbot:
+    image: python:3.9
+    tty: true
+    volumes:
+      - discordbot_data:/home/
+    environment:
+      DISCORD_SECRET: ${DISCORD_SECRET}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+    command: >
+      bash -c '
+        apt update -y && \
+        apt install -y vim && \
+        python3 -m venv /home/src/venv/ && \
+        python3 -m pip install --upgrade pip && \
+        source /home/src/venv/bin/activate && \
+        pip install -r /home/src/requirements.txt && \
+        python /home/src/main.py
+        '
+volumes:
+  lavalink_data:
+    external: true
+  discordbot_data:
+    external: true

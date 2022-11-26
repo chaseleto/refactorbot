@@ -1,0 +1,2 @@
+gcloud compute firewall-rules create allow-portainer --allow tcp:9001 --source-tags=discordbot --source-ranges=0.0.0.0/0 --description="this is best practice"
+gcloud compute firewall-rules create allow-portainer --allow tcp:9002 --source-tags=discordbot --source-ranges=0.0.0.0/0 --description="this is best practice"
