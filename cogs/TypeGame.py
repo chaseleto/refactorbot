@@ -19,6 +19,17 @@ class TypeGame(commands.Cog):
 
     @commands.command(name='typegame', aliases=['tg'])
     async def typegame(self, ctx, difficulty='easy'):
+        """Starts a game of type racer.
+
+        Difficulty can be easy, medium, or hard. Defaults to easy. 
+        The goal of the game is to type the provided text as fast and accurate as possible. You are scored on both accuracy and time spent typing.
+
+        Parameters
+        ----------
+        difficulty: str
+            The difficulty level of the game to be played. Defaults to easy.
+        """
+
         if self.current_game or self.game_starting:
             await ctx.send('There is already a game running!')
             return

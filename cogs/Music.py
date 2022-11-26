@@ -49,14 +49,14 @@ class Music(commands.Cog):
     youtube = build('youtube', 'v3', developerKey=GOOGLE_API_KEY)
     max_duration = None
 
-    @commands.command(name='play', usage='play [song name]')
+    @commands.command(name='play', aliases=['p'])
     async def play(self, ctx, *, query):
         """Plays a song from youtube.
 
         Parameters
         ----------
-        Song name: str
-            The name of the song to play.
+        query: str
+            The name of the song to search from youtube.
         """
         #Get playable object from query
         track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
@@ -82,7 +82,7 @@ class Music(commands.Cog):
             value=f"Duration: {str(datetime.timedelta(seconds=track.duration))}",
             inline=True
         )
-
+        track.requester = ctx.author
         #Add track to queue or play if queue is empty and not playing
         if not vc.is_playing() and self.queue.is_empty:
             await vc.play(track)
@@ -98,8 +98,8 @@ class Music(commands.Cog):
         """Event fired when a track has finished playing."""
         if self.queue.is_empty:
             return await player.disconnect()
-        await player.play(self.queue.pop())
-        await self.now_playing_embed(player, 1, self.play_tracking_message)
+        await player.play(self.queue.get())
+        await self.now_playing_embed(player)
         
     @commands.command(name='skip')
     async def skip(self, ctx):
@@ -177,7 +177,7 @@ class Music(commands.Cog):
             return await ctx.send('Position is longer than the song.')
         await vc.seek(position * 1000)
         seek = position
-        await self.now_playing_embed(ctx.voice_client, int(seek), self.play_tracking_message)
+        await self.now_playing_embed(ctx.voice_client)
     
     @commands.command(name='queue', aliases=['q', 'cue', 'qu'])
     async def queued(self, ctx):
@@ -194,6 +194,7 @@ class Music(commands.Cog):
         total_time_in_queue = 0
         for track in self.queue:
             total_time_in_queue += track.duration
+        
         embed = discord.Embed(
                 type="rich",
                 title=f"Now Playing: {vc.track.title}",
@@ -203,16 +204,21 @@ class Music(commands.Cog):
                 url=f"{vc.track.uri}"
             )
         for count, song in enumerate(self.queue):
-                embed.add_field(
-                    name=f"{count+1}) {song}",
-                    value=f"Duration: {str(datetime.timedelta(seconds=song.duration))}",
-                    inline=True
-                )
+            requester = "Unknown"
+            try:
+                requester = song.requester.mention
+            except:
+                requester = "AutoPlayed"
+            embed.add_field(
+                name=f"{count+1}) {song}",
+                value=f"Duration: {str(datetime.timedelta(seconds=song.duration))}\nRequested by: {requester}",
+                inline=True
+            )
         thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
         embed.set_thumbnail(url=f"{thumb}")
         await ctx.send(embed=embed)
 
-    async def now_playing_embed(self, voice_player, seeked_to = None, play_tracking_message = None):
+    async def now_playing_embed(self, voice_player):
         """Create an embed for the current song."""
         vc: wavelink.Player = voice_player
         music_channel = voice_player.guild.get_channel(int(self.music_channel))
@@ -220,21 +226,30 @@ class Music(commands.Cog):
         track_length = vc.track.length
         if not vc.is_playing():
             return await music_channel.send('I am not playing anything right now.')
-        if seeked_to and self.play_tracking:
-            current_seconds = datetime.timedelta(seconds=seeked_to)
-            await play_tracking_message.delete()
-        elif seeked_to and not self.play_tracking:
-            current_seconds = datetime.timedelta(seconds=0)
-        
-        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
+        if self.play_tracking_message:
+            await self.play_tracking_message.delete()
+        requester = "Unknown"
+        try:
+            requester = vc.track.requester.mention
+        except:
+            requester = "AutoPlayed"
+        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
         thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
         embed.set_thumbnail(url=f"{thumb}")
-        msg = await music_channel.send(content="Now playing:", embed=embed)
+        msg = await music_channel.send(content="ɴᴏᴡ ᴘʟᴀʏɪɴɢ", embed=embed)
         self.play_tracking_message = msg
         self.play_tracking = True
+        await msg.add_reaction('⏮')
+        await msg.add_reaction('⏪')
+        await msg.add_reaction('▶')
+        await msg.add_reaction('⏸')
+        await msg.add_reaction('⏩')
+        await msg.add_reaction('⏭')
+        
+
         while datetime.timedelta(seconds=int(vc.position)) < datetime.timedelta(seconds=vc.track.length):
             
-            embed.description = f'**{vc.track.author}**\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
+            embed.description = f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}**\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
             try:
                 await msg.edit(embed=embed)
             except:
@@ -259,7 +274,7 @@ class Music(commands.Cog):
 
         Parameters
         ----------
-        Max song duration: int
+        max_duration: int
             The maximum duration of songs to add to the queue automatically 
         """
 
@@ -315,24 +330,32 @@ class Music(commands.Cog):
 
     async def get_related_videos(self, video_id):
         """Get related videos."""
-        request = self.youtube.search().list(
-                        part='snippet',
-                        relatedToVideoId=str(video_id),
-                        type="video",
-                        relevanceLanguage="en",
-                    )
-        response = request.execute()
-        ls_ids = []
-        for item in response['items']:
-            ls_ids.append(item['id']['videoId'])
-        return ls_ids
+        try:
+            request = self.youtube.search().list(
+                            part='snippet',
+                            relatedToVideoId=str(video_id),
+                            type="video",
+                            relevanceLanguage="en",
+                        )
+            response = request.execute()
+            ls_ids = []
+            for item in response['items']:
+                ls_ids.append(item['id']['videoId'])
+            return ls_ids
+        except:
+            return None
     
     @commands.Cog.listener()
     async def on_wavelink_track_start(self, player: wavelink.Player, track: wavelink.Track):
         """Track start event."""
         print("track started")
         if self.autoplay_ and self.queue.count <= 2:
-            for related_video in await self.get_related_videos(track.identifier):
+            related = await self.get_related_videos(track.identifier)
+            if not related:
+                await self.music_channel.send("Could not add related video to queue. This is likely due to exceeding your daily quota of 10,000 units. Please try again tomorrow or update your Google API Key. More: !help autoplay")
+                self.autoplay_ = False
+                return
+            for related_video in related:
                 try:
                     track = await wavelink.YouTubeTrack.search("https://www.youtube.com/watch?v=" + related_video, return_first=True)
                     if self.max_duration and track.duration <= self.max_duration:
@@ -403,6 +426,132 @@ class Music(commands.Cog):
         else:
             await vc.move_to(ctx.author.voice.channel)
         await ctx.send(f'Joined {ctx.author.voice.channel}.')
+    @commands.command(name='select', aliases=['choose', 'pick'])
+    async def select(self, ctx, index: int):
+        """Selects a song from the queue to play next.
+
+        Parameters
+        ----------
+        index: int
+            The index of the song to play next.
+        """
+        vc: wavelink.Player = ctx.voice_client
+        if not vc:
+            return await ctx.send('I am not connected to a voice channel.')
+        if not 0 < index <= self.queue.count:
+            return await ctx.send('Please enter a valid index.')
+        track = self.queue[index - 1]
+        self.queue.__delitem__(index - 1)
+        self.queue.put_at_front(track)
+
+        embed = discord.Embed(
+            type="rich",
+            title=f"{track.title}",
+            description=f"Queued by {ctx.author.mention}",
+            color=discord.Color.from_str("#ff0101"),
+            timestamp=datetime.datetime.now(),
+            url=f"{track.uri}"
+        )
+        embed.set_thumbnail(url=f"{track.thumb}")
+
+        embed.add_field(
+            name=f"Uploaded by: {track.author}",
+            value=f"Duration: {str(datetime.timedelta(seconds=track.duration))}",
+            inline=True
+        )
+
+        await ctx.send(content="ᴘʟᴀʏɪɴɢ ɴᴇxᴛ", embed=embed)
+    @commands.command(name='next')
+    async def next(self, ctx, *, query: str):
+        """Same as play command but puts the requested track to the front of the queue.
+
+        Parameters
+        ----------
+        query: str
+            The query to search for.
+        """
+        track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
+        self.queue.put_at_front(track)
+        embed = discord.Embed(
+            type="rich",
+            title=f"{track.title}",
+            description=f"Queued by {ctx.author.mention}",
+            color=discord.Color.from_str("#ff0101"),
+            timestamp=datetime.datetime.now(),
+            url=f"{track.uri}"
+        )
+        embed.set_thumbnail(url=f"{track.thumb}")
+
+        embed.add_field(
+            name=f"Uploaded by: {track.author}",
+            value=f"Duration: {str(datetime.timedelta(seconds=track.duration))}",
+            inline=True
+        )
+        track.requester = ctx.author
+        await ctx.send(content='ᴘʟᴀʏɪɴɢ ɴᴇxᴛ', embed=embed)
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        if user == self.bot.user:
+            return
+        if reaction.message != self.play_tracking_message:
+            return
+        if reaction.message.guild.voice_client:
+            vc: wavelink.Player = reaction.message.guild.voice_client
+        else:
+            return
+        if reaction.emoji == "⏮":
+            await vc.seek(0)
+        elif reaction.emoji == "⏪":
+            if vc.position < 15:
+                await vc.seek(0)
+            else:
+                await vc.seek((vc.position - 15) * 1000)
+        elif reaction.emoji == "▶":
+            await vc.resume()
+        elif reaction.emoji == "⏸":
+            await vc.pause()
+        elif reaction.emoji == "⏩":
+            if vc.position + 15 > vc.track.duration:
+                await vc.seek(vc.track.duration * 1000)
+            else:
+                await vc.seek((vc.position + 15) * 1000)
+        elif reaction.emoji == "⏭":
+            await vc.seek(vc.track.duration * 1000)
+
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        if user == self.bot.user:
+            return
+        if reaction.message != self.play_tracking_message:
+            return
+        if reaction.message.guild.voice_client:
+            vc: wavelink.Player = reaction.message.guild.voice_client
+        else:
+            return
+        if reaction.emoji == "⏮":
+            print("attempting to restart")
+            await vc.seek(0)
+        elif reaction.emoji == "⏪":
+            print("attempting to rewind")
+            if vc.position < 15:
+                await vc.seek(0)
+            else:
+                await vc.seek((vc.position - 15) * 1000)
+        elif reaction.emoji == "▶":
+            print("attempting to resume")
+            await vc.resume()
+        elif reaction.emoji == "⏸":
+            print("attempting to pause")
+            await vc.pause()
+        elif reaction.emoji == "⏩":
+            print(f"attempting to skip forward {vc.position}, {vc.position + 15}, {vc.track.duration}")
+            if vc.position + 15 >= vc.track.duration:
+                await vc.seek(vc.track.duration * 1000)
+            else:
+                await vc.seek((vc.position + 15) * 1000)
+        elif reaction.emoji == "⏭":
+            print("attempting to skip to end")
+            await vc.seek(vc.track.duration * 1000)
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
