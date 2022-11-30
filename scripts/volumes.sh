@@ -1,6 +1,6 @@
 VOL1=lavalink_data
 VOL2=discordbot_data
-
+MONGO_DIR_EXISTS=$(ls /opt/mongo_data | grep mongo_data)
 DIR1_EXISTS=$(ls /opt/docker/$VOL1 | grep $VOL1)
 DIR2_EXISTS=$(ls /opt/docker/$VOL2 | grep $VOL2)
 
@@ -33,6 +33,18 @@ docker volume create --driver local \
     --opt type=none \
     --opt device=/opt/docker/$VOL2/ \
     --opt o=bind $VOL2
+fi
+
+if [ -z "$MONGO_DIR_EXISTS" ]; then
+    echo "creating /opt/mongo_data/mongo_data.."
+    sudo mkdir -p /opt/mongo_data
+fi
+
+if [ -z "$MONGO_VOL_EXISTS" ]; then
+    docker volume create --driver local \
+    --opt type=none \
+    --opt device=/opt/mongo_data/ \
+    --opt o=bind mongo_data
 fi
 
 # Copy source code to the volume
