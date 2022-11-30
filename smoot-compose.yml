@@ -1,6 +1,7 @@
 services:
   mongodb:
     image: mongo:latest
+    tty: true
     container_name: mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
@@ -39,4 +40,6 @@ volumes:
   lavalink_data:
     external: true
   discordbot_data:
+    external: true
+  mongo_data:
     external: true
