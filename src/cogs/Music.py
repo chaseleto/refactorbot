@@ -337,10 +337,10 @@ class Music(commands.Cog):
                 return False
             return True
 
-    async def get_related_videos(self, video_id):
+    async def get_related_videos(self, video_id, guild):
         """Get related videos."""
         try:
-            collection = self.mg['discord']['guilds'].find_one({'guild_id': self.guild_id})
+            collection = self.mg['discord']['guilds'].find_one({'guild_id': guild})
             api_key = collection['google_api_key']
             youtube = build('youtube', 'v3', developerKey=api_key)
             request = youtube.search().list(
@@ -361,10 +361,12 @@ class Music(commands.Cog):
     async def on_wavelink_track_start(self, player: wavelink.Player, track: wavelink.Track):
         """Track start event."""
         print("track started")
+        music_channel = self.bot.get_channel(self.music_channel)
+        guild = music_channel.guild.id
         if self.autoplay_ and self.queue.count <= 2:
-            related = await self.get_related_videos(track.identifier)
+            related = await self.get_related_videos(track.identifier, guild)
             if not related:
-                await self.music_channel.send("Could not add related video to queue. This is likely due to exceeding your daily quota of 10,000 units. Please try again tomorrow or update your Google API Key. More: !help autoplay")
+                await music_channel.send("Could not add related video to queue. This is likely due to exceeding your daily quota of 10,000 units. Please try again tomorrow or update your Google API Key. More: !help autoplay")
                 self.autoplay_ = False
                 return
             for related_video in related:
