@@ -573,9 +573,9 @@ class Music(commands.Cog):
             The API key to pass to the bot.
         """
         collection = self.mg['discord']['guilds']
-        collection.find_one_and_update({"_id": ctx.guild.id}, 
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
                                  {"$set": {"google_api_key": api_key}})
-        collection.find_one_and_update({"_id": ctx.guild.id}, 
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
                                  {"$set": {"has_api_key": True}})
         await ctx.send("API key passed.")
 
