@@ -42,7 +42,7 @@ async def on_message(message):
 @bot.event
 async def on_guild_join(guild):
     collection = mg['discord']['guilds']
-    collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_region': guild.region, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None})
+    collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None})
     print(f'Joined {guild.name} ({guild.id})')
 
 #When login is successful
