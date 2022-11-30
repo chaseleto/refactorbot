@@ -340,8 +340,8 @@ class Music(commands.Cog):
     async def get_related_videos(self, video_id, guild):
         """Get related videos."""
         try:
-            collection = self.mg['discord']['guilds'].find_one({'guild_id': guild})
-            api_key = collection['google_api_key']
+            collection = self.mg['discord']['guilds']
+            api_key = collection.find_one({'guild_id': guild})['google_api_key']
             print(api_key)
             youtube = build('youtube', 'v3', developerKey=api_key)
             request = youtube.search().list(
@@ -362,8 +362,8 @@ class Music(commands.Cog):
     async def on_wavelink_track_start(self, player: wavelink.Player, track: wavelink.Track):
         """Track start event."""
         print("track started")
-        music_channel = self.bot.get_channel(self.music_channel)
-        guild = music_channel.guild.id
+        music_channel = player.guild.get_channel(self.music_channel)
+        guild = player.guild.id
         if self.autoplay_ and self.queue.count <= 2:
             related = await self.get_related_videos(track.identifier, guild)
             if not related:
