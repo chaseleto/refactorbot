@@ -53,7 +53,6 @@ class Music(commands.Cog):
     music_channel = config['temp_music_channel']
     autoplay_ = False
     GOOGLE_API_KEY = None
-    youtube = build('youtube', 'v3', developerKey=GOOGLE_API_KEY)
     max_duration = None
 
     @commands.command(name='play', aliases=['p'])
@@ -287,7 +286,7 @@ class Music(commands.Cog):
 
         enabled_message = 'Autoplay has been enabled.'
         
-
+        
         if max_duration:
             max_duration = max_duration * 60
             self.max_duration = max_duration
@@ -313,9 +312,7 @@ class Music(commands.Cog):
                                 self.queue.put(track)
                         except :
                             print("Couldn't add related video to queue.")
-            elif not self.GOOGLE_API_KEY:
-                await ctx.send('You need to set an API key to use this command.')
-                self.autoplay_ = False
+                            
             elif not await self.check_api_key():
                 await ctx.send('Your API key is invalid.')
                 self.autoplay_ = False
@@ -323,9 +320,12 @@ class Music(commands.Cog):
     async def check_api_key(self):
         """Autoplay."""
         if self.autoplay_:
-            if self.GOOGLE_API_KEY:
+            collection = self.mg['discord']['guilds']
+            api_key = collection.find_one({'guild_id': self.guild_id})['google_api_key']
+            if api_key:
+                youtube = build('youtube', 'v3', developerKey=api_key)
                 try:
-                    request = self.youtube.search().list(
+                    request = youtube.search().list(
                         part='snippet',
                         relatedToVideoId="mRzv6Zcowz0",
                         type="video",
@@ -341,8 +341,9 @@ class Music(commands.Cog):
         """Get related videos."""
         try:
             collection = self.mg['discord']['guilds'].find_one({'guild_id': self.guild_id})
-            self.GOOGLE_API_KEY = collection['google_api_key']
-            request = self.youtube.search().list(
+            api_key = collection['google_api_key']
+            youtube = build('youtube', 'v3', developerKey=api_key)
+            request = youtube.search().list(
                             part='snippet',
                             relatedToVideoId=str(video_id),
                             type="video",
