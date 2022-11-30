@@ -333,11 +333,15 @@ class Music(commands.Cog):
                     response = request.execute()
                 except:
                     return False
+            else:
+                return False
             return True
 
     async def get_related_videos(self, video_id):
         """Get related videos."""
         try:
+            collection = self.mg['discord']['guilds'].find_one({'guild_id': self.guild_id})
+            self.GOOGLE_API_KEY = collection['google_api_key']
             request = self.youtube.search().list(
                             part='snippet',
                             relatedToVideoId=str(video_id),
@@ -568,6 +572,9 @@ class Music(commands.Cog):
         api_key: str
             The API key to pass to the bot.
         """
+        collection = self.mg['discord']['guilds'].find_one({'guild_id': ctx.guild.id})
+        collection['google_api_key'] = api_key
+        collection['has_api_key'] = True
         self.GOOGLE_API_KEY = api_key
         await ctx.send("API key passed.")
 
