@@ -38,6 +38,13 @@ async def load():
 async def on_message(message):
     if message.author.bot:
         return
+    try:
+        for guild in bot.guilds:
+            print(guild.name)
+            collection = mg['discord']['guilds']
+            collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None})
+    except:
+        print("Guild already in database.")
     await bot.process_commands(message)
 
 #When login is successful
@@ -46,12 +53,6 @@ async def on_connect():
     print(f'Logged in as {bot.user.name} ({bot.user.id})')
     print('------')
     await load()
-    try:
-        for guild in bot.guilds:
-            collection = mg['discord']['guilds']
-            collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None})
-    except:
-        print("Guild already in database.")
     try:
         synced = await bot.tree.sync()
         print(f'Synced {len(synced)} commands.')
