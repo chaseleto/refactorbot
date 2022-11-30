@@ -61,7 +61,7 @@ async def on_connect():
 
 #Login and connect
 async def main():
-    token = config['Token']
+    token = os.getenv("DISCORD_SECRET")
     await load()
     await bot.start(token)
 
