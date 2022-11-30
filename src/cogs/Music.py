@@ -18,7 +18,7 @@ class Music(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         
-    with open('config/cfg.yml', 'r') as f:
+    with open('/home/src/config/cfg.yml', 'r') as f:
         config = yaml.safe_load(f)
     
     mg = MongoClient('34.171.240.203', 27017,
