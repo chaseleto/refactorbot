@@ -30,7 +30,7 @@ class Music(commands.Cog):
         await self.bot.wait_until_ready()
 
         await wavelink.NodePool.create_node(bot=self.bot,
-                                            host='localhost',
+                                            host='lavalink',
                                             port=2333,
                                             password='youshallnotpass')
     @commands.Cog.listener()
