@@ -303,7 +303,7 @@ class Music(commands.Cog):
                 if ctx.voice_client.is_playing():
                     vc: wavelink.Player = ctx.voice_client
                     track = vc.track
-                    for related_video in await self.get_related_videos(track.identifier):
+                    for related_video in await self.get_related_videos(track.identifier, ctx.guild.id):
                         try:                            
                             track = await wavelink.YouTubeTrack.search("https://www.youtube.com/watch?v=" + related_video, return_first=True)
                             if max_duration and track.length <= max_duration:
