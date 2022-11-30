@@ -21,7 +21,7 @@ class Music(commands.Cog):
     with open('/home/src/config/cfg.yml', 'r') as f:
         config = yaml.safe_load(f)
     
-    mg = MongoClient('34.171.240.203', 27017,
+    mg = MongoClient('mongodb', 27017,
                  username=os.environ['MONGO_USER'],
                  password=os.environ['MONGO_PASSWORD'])
 
