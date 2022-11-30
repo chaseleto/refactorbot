@@ -342,6 +342,7 @@ class Music(commands.Cog):
         try:
             collection = self.mg['discord']['guilds'].find_one({'guild_id': guild})
             api_key = collection['google_api_key']
+            print(api_key)
             youtube = build('youtube', 'v3', developerKey=api_key)
             request = youtube.search().list(
                             part='snippet',
