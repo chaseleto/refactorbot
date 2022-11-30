@@ -298,7 +298,7 @@ class Music(commands.Cog):
             self.queue.clear()
         else:
             self.autoplay_ = True
-            if await self.check_api_key():
+            if await self.check_api_key(ctx):
                 await ctx.send(enabled_message)
                 if ctx.voice_client.is_playing():
                     vc: wavelink.Player = ctx.voice_client
@@ -312,16 +312,16 @@ class Music(commands.Cog):
                                 self.queue.put(track)
                         except :
                             print("Couldn't add related video to queue.")
-                            
-            elif not await self.check_api_key():
+
+            elif not await self.check_api_key(ctx):
                 await ctx.send('Your API key is invalid.')
                 self.autoplay_ = False
 
-    async def check_api_key(self):
+    async def check_api_key(self, ctx):
         """Autoplay."""
         if self.autoplay_:
             collection = self.mg['discord']['guilds']
-            api_key = collection.find_one({'guild_id': self.guild_id})['google_api_key']
+            api_key = collection.find_one({'guild_id': ctx.guild.id})['google_api_key']
             if api_key:
                 youtube = build('youtube', 'v3', developerKey=api_key)
                 try:
