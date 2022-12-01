@@ -50,7 +50,6 @@ class Music(commands.Cog):
     context = None
     play_tracking = False
     play_tracking_message = None
-    music_channel = config['temp_music_channel']
     autoplay_ = False
     GOOGLE_API_KEY = None
     max_duration = None
@@ -64,6 +63,14 @@ class Music(commands.Cog):
         query: str
             The name of the song to search from youtube.
         """
+        collection = self.mg['discord']['guilds']
+        try:
+            music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+        except:
+            music_channel = None
+        if music_channel is None:
+            await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
+            return
         #Get playable object from query
         track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
 
@@ -226,8 +233,15 @@ class Music(commands.Cog):
 
     async def now_playing_embed(self, voice_player):
         """Create an embed for the current song."""
+        collection = self.mg['discord']['guilds']
+        guild = voice_player.guild.id
         vc: wavelink.Player = voice_player
-        music_channel = voice_player.guild.get_channel(int(self.music_channel))
+        try:
+            music_channel = voice_player.guild.get_channel(int(collection.find_one({'guild_id': guild})['music_channel_id']))
+        except:
+            music_channel = None
+        if music_channel is None:
+            return
         current_seconds = datetime.timedelta(seconds=int(vc.position))
         track_length = vc.track.length
         if not vc.is_playing():
@@ -294,7 +308,9 @@ class Music(commands.Cog):
         if self.autoplay_:
             self.autoplay_ = False
             await ctx.send('Autoplay has been disabled.')
-            self.queue.clear()
+            for song in self.queue:
+                if song.requester == "AutoPlayed":
+                    self.queue.remove(song)
         else:
             self.autoplay_ = True
             if await self.check_api_key(ctx):
@@ -361,7 +377,13 @@ class Music(commands.Cog):
     async def on_wavelink_track_start(self, player: wavelink.Player, track: wavelink.Track):
         """Track start event."""
         print("track started")
-        music_channel = player.guild.get_channel(self.music_channel)
+        collection = self.mg['discord']['guilds']
+        try:
+            music_channel = player.guild.get_channel(int(collection.find_one({'guild_id': player.guild.id})['music_channel_id']))
+        except:
+            music_channel = None
+        if music_channel is None:
+            return
         guild = player.guild.id
         if self.autoplay_ and self.queue.count <= 2:
             related = await self.get_related_videos(track.identifier, guild)
@@ -558,12 +580,11 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position - 15) * 1000)
         elif reaction.emoji == "⏯":
-
             if vc.is_paused():
-                print("Already paused.")
+                #print("Already paused.")
                 await vc.resume()
             elif not vc.is_paused():
-                print("not paused")
+                #print("not paused")
                 await vc.pause()
         elif reaction.emoji == "⏩":
             print(f"attempting to skip forward {vc.position}, {vc.position + 15}, {vc.track.duration}")
