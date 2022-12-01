@@ -247,8 +247,7 @@ class Music(commands.Cog):
         self.play_tracking = True
         await msg.add_reaction('⏮')
         await msg.add_reaction('⏪')
-        await msg.add_reaction('▶')
-        await msg.add_reaction('⏸')
+        await msg.add_reaction('⏯')
         await msg.add_reaction('⏩')
         await msg.add_reaction('⏭')
         
@@ -407,6 +406,7 @@ class Music(commands.Cog):
         await vc.disconnect()
         await ctx.send('Disconnected from the voice channel.')
         self.queue.clear()
+        if self.autoplay_: self.autoplay_ = False
     
     @commands.command(name='volume', aliases=['vol'])
     async def volume(self, ctx, volume: int):
@@ -521,9 +521,14 @@ class Music(commands.Cog):
                 await vc.seek(0)
             else:
                 await vc.seek((vc.position - 15) * 1000)
-        elif reaction.emoji == "▶":
-            await vc.resume()
-        elif reaction.emoji == "⏸":
+        elif reaction.emoji == "⏯":
+
+            if vc.is_paused():
+                print("Already paused.")
+                await vc.resume()
+            elif not vc.is_paused():
+                print("not paused")
+                await vc.pause()
             await vc.pause()
         elif reaction.emoji == "⏩":
             if vc.position + 15 > vc.track.duration:
@@ -552,12 +557,14 @@ class Music(commands.Cog):
                 await vc.seek(0)
             else:
                 await vc.seek((vc.position - 15) * 1000)
-        elif reaction.emoji == "▶":
-            print("attempting to resume")
-            await vc.resume()
-        elif reaction.emoji == "⏸":
-            print("attempting to pause")
-            await vc.pause()
+        elif reaction.emoji == "⏯":
+
+            if vc.is_paused():
+                print("Already paused.")
+                await vc.resume()
+            elif not vc.is_paused():
+                print("not paused")
+                await vc.pause()
         elif reaction.emoji == "⏩":
             print(f"attempting to skip forward {vc.position}, {vc.position + 15}, {vc.track.duration}")
             if vc.position + 15 >= vc.track.duration:
@@ -582,7 +589,13 @@ class Music(commands.Cog):
         collection.find_one_and_update({"guild_id": ctx.guild.id}, 
                                  {"$set": {"has_api_key": True}})
         await ctx.send("API key passed.")
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member):
+        if member == self.bot.user:
+            self.queue.clear()
+            if self.autoplay_: self.autoplay_ = False
+        else:
+            return
 
-        
 async def setup(bot):
     await bot.add_cog(Music(bot))
