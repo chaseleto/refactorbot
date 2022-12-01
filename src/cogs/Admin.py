@@ -1,10 +1,15 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+from pymongo import MongoClient
+import os
 
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+    mg = MongoClient('mongodb', 27017,
+            username=os.environ['MONGO_USER'],
+                password=os.environ['MONGO_PASSWORD'])
 
     #############################################################################################################################################################
     #                                                                         Channel Setup Commands                                                            #
@@ -14,12 +19,13 @@ class Admin(commands.Cog):
     @app_commands.command(name='setup_music', description='Sets the music channel for the server.')
     @commands.has_permissions(administrator=True)
     async def setup_music(ctx, channel: discord.TextChannel):
-        #Database implementation
         await ctx.send(f'Channel {channel} set as music channel.')
     @app_commands.command(name='setup_music', description='Sets the music channel for the server.')
     @commands.has_permissions(administrator=True)
     async def setup_music(self, interaction: discord.Interaction, channel: discord.TextChannel):
-        #Database implementation
+        collection = self.mg['discord']['guilds']
+        collection.find_one_and_update({"guild_id": interaction.guild.id}, 
+                                 {"$set": {"music_channel_id": channel.id}})
         await interaction.response.send_message(f'Channel {channel} set as music channel.')       
 
 
