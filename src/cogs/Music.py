@@ -255,6 +255,7 @@ class Music(commands.Cog):
             requester = vc.track.requester.mention
         except:
             requester = "AutoPlayed"
+            vc.track.requester = "AutoPlayed"
         embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
         thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
         embed.set_thumbnail(url=f"{thumb}")
@@ -561,7 +562,7 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
-            await vc.seek(vc.track.duration * 1000)
+            await reaction.message.channel.send(f"{user.mention} skipped the song")
 
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
@@ -598,8 +599,9 @@ class Music(commands.Cog):
         elif reaction.emoji == "⏭":
             print("attempting to skip to end")
             await vc.seek(vc.track.duration * 1000)
-    @commands.command(name='pass_api_key')
-    async def pass_api_key(self, ctx, *, api_key: str):
+            await reaction.message.channel.send(f"{user.mention} skipped the song")
+    @app_commands.command(name='pass_api_key')
+    async def pass_api_key(self, interaction: discord.Interaction, *, api_key: str):
         """Passes the google API key to the bot.
 
         Parameters
@@ -608,11 +610,11 @@ class Music(commands.Cog):
             The API key to pass to the bot.
         """
         collection = self.mg['discord']['guilds']
-        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+        collection.find_one_and_update({"guild_id": interaction.guild.id}, 
                                  {"$set": {"google_api_key": api_key}})
-        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+        collection.find_one_and_update({"guild_id": interaction.guild.id}, 
                                  {"$set": {"has_api_key": True}})
-        await ctx.send("API key passed.")
+        await interaction.response.send_message("API key passed.", ephemeral=True)
     @commands.Cog.listener()
     async def on_voice_state_update(self, member):
         if member == self.bot.user:
