@@ -56,7 +56,7 @@ class Admin(commands.Cog):
         embed = discord.Embed(title=f"{user.name}#{user.discriminator}", description=f"{user.mention} ({user.id})", color=0x00ff00)
         embed.add_field(name="Created At", value=user.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"), inline=False)
         embed.add_field(name="Bot?", value=user.bot, inline=False)
-        embed.set_thumbnail(url=user.display_avatar)
+        embed.set_image(url=user.display_avatar)
         await interaction.response.send_message(embed=embed)
 
     #MEMBER INFO COMMAND
@@ -77,7 +77,7 @@ class Admin(commands.Cog):
         embed.add_field(name="Roles", value=", ".join([role.mention for role in member.roles if role != interaction.guild.default_role]), inline=False)
         embed.add_field(name="Top Role", value=member.top_role.mention, inline=False)
         embed.add_field(name="Bot?", value=member.bot, inline=False)
-        embed.set_thumbnail(url=member.display_avatar)
+        embed.set_image(url=member.display_avatar)
         await interaction.response.send_message(embed=embed)
     
     #SERVER INFO COMMAND
