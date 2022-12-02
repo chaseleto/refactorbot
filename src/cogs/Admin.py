@@ -105,7 +105,7 @@ class Admin(commands.Cog):
 
     #PROFILE PICTURE COMMAND
     @commands.command(name="pfp", description="Gets a user's profile picture")
-    async def pfp(self, ctx, user: discord.User):
+    async def pfp(self, ctx, user: discord.Member):
         embed = discord.Embed(title=f"{user.name}#{user.discriminator}", description=f"{user.mention} ({user.id})", color=0x00ff00)
         embed.set_image(url=user.display_avatar)
         await ctx.send(embed=embed)
