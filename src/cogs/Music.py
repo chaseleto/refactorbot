@@ -64,10 +64,11 @@ class Music(commands.Cog):
             The name of the song to search from youtube.
         """
         collection = self.mg['discord']['guilds']
+        music_channel = None
         try:
             music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
         except:
-            music_channel = None
+            return
         if music_channel is None:
             await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
             return
@@ -236,10 +237,11 @@ class Music(commands.Cog):
         collection = self.mg['discord']['guilds']
         guild = voice_player.guild.id
         vc: wavelink.Player = voice_player
+        music_channel = None
         try:
             music_channel = voice_player.guild.get_channel(int(collection.find_one({'guild_id': guild})['music_channel_id']))
         except:
-            music_channel = None
+            return
         if music_channel is None:
             return
         current_seconds = datetime.timedelta(seconds=int(vc.position))
