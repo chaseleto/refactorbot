@@ -9,7 +9,7 @@ import datetime
 
 # Logging
 logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.ERROR)
 handler = logging.FileHandler(filename='/home/src/discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
@@ -45,7 +45,7 @@ async def on_ready():
         for guild in bot.guilds:
             print(guild.name)
             collection = mg['discord']['guilds']
-            collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None})
+            collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None, 'music_channel_id': None})
     except:
         print("Guild already in database.")
 #When login is successful
