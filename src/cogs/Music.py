@@ -398,6 +398,7 @@ class Music(commands.Cog):
             for related_video in related:
                 try:
                     track = await wavelink.YouTubeTrack.search("https://www.youtube.com/watch?v=" + related_video, return_first=True)
+                    track.requester = "AutoPlayed"
                     if self.max_duration and track.duration <= self.max_duration:
                         self.queue.put(track)
                     elif not self.max_duration:
