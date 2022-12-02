@@ -599,7 +599,7 @@ class Music(commands.Cog):
             await vc.seek(vc.track.duration * 1000)
     @commands.command(name='pass_api_key')
     async def pass_api_key(self, ctx, *, api_key: str):
-        """Passes the API key to the bot.
+        """Passes the google API key to the bot.
 
         Parameters
         ----------
