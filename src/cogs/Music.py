@@ -311,9 +311,17 @@ class Music(commands.Cog):
         if self.autoplay_:
             self.autoplay_ = False
             await ctx.send('Autoplay has been disabled.')
-            for song in self.queue:
+            removeList = []
+            for song in self.queue._queue:
                 if song.requester == "AutoPlayed":
-                    self.queue.remove(song)
+                    removeList.append(song)
+                    print(f"removing: {song} because requester: {song.requester}")
+            for track in removeList:
+                try:
+                    del self.queue._queue[self.queue.find_position(track)]
+                    print(f"Removed {track}")
+                except:
+                    print(f"failed to remove track {track}")
         else:
             self.autoplay_ = True
             if await self.check_api_key(ctx):
@@ -324,6 +332,7 @@ class Music(commands.Cog):
                     for related_video in await self.get_related_videos(track.identifier, ctx.guild.id):
                         try:                            
                             track = await wavelink.YouTubeTrack.search("https://www.youtube.com/watch?v=" + related_video, return_first=True)
+                            track.requester = "AutoPlayed"
                             if max_duration and track.length <= max_duration:
                                 self.queue.put(track)
                             elif not max_duration:
