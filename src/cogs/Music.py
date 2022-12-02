@@ -562,6 +562,7 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
+            await vc.seek(vc.track.duration * 1000)
             await reaction.message.channel.send(f"{user.mention} skipped the song")
 
     @commands.Cog.listener()
@@ -601,7 +602,7 @@ class Music(commands.Cog):
             await vc.seek(vc.track.duration * 1000)
             await reaction.message.channel.send(f"{user.mention} skipped the song")
     @app_commands.command(name='pass_api_key')
-    async def pass_api_key(self, interaction: discord.Interaction, *, api_key: str):
+    async def pass_api_key(self, interaction: discord.Interaction, api_key: str):
         """Passes the google API key to the bot.
 
         Parameters
