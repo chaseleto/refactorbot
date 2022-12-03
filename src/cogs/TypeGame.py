@@ -35,42 +35,47 @@ class TypeGame(commands.Cog):
             return
         
         self.game_starting = True
-        with open("config/typeracer.yml", "r") as f:
-            typegame = yaml.safe_load(f)
-        if difficulty == "easy":
-            self.entry = random.choice(typegame["easy"])
-        elif difficulty == "medium":
-            self.entry = random.choice(typegame["medium"])
-        elif difficulty == "hard":
-            self.entry = random.choice(typegame["hard"])
-        self.avg_word_length = await self.get_avg_word_length()
+        try:
+            with open("/home/src/config/typeracer.yml", "r") as f:
+                typegame = yaml.safe_load(f)
+            if difficulty == "easy":
+                self.entry = random.choice(typegame["easy"])
+            elif difficulty == "medium":
+                self.entry = random.choice(typegame["medium"])
+            elif difficulty == "hard":
+                self.entry = random.choice(typegame["hard"])
+            self.avg_word_length = await self.get_avg_word_length()
 
-        await ctx.send(f"In 5 seconds I will send a prompt. Type it as fast as you can. You will have {self.timer} seconds to type it. Scores will be posted after the game ends. Good luck!")
-        await asyncio.sleep(5)
-        await ctx.send(f"{self.entry}")
+            await ctx.send(f"In 5 seconds I will send a prompt. Type it as fast as you can. You will have {self.timer} seconds to type it. Scores will be posted after the game ends. Good luck!")
+            await asyncio.sleep(5)
+            await ctx.send(f"{self.entry}")
 
-        self.starttime = datetime.datetime.now()
-        self.game_channel = ctx.channel
-        self.current_game = True
-        self.game_starting = False
+            self.starttime = datetime.datetime.now()
+            self.game_channel = ctx.channel
+            self.current_game = True
+            self.game_starting = False
 
-        await asyncio.sleep(self.timer - 10)
-        await ctx.send("10 seconds left!")
-        await asyncio.sleep(5)
-        await ctx.send("5 seconds left!")
-        await asyncio.sleep(5)
-        self.current_game = False
-        self.entry = None
-        self.starttime = None
-        self.game_channel = None
+            await asyncio.sleep(self.timer - 10)
+            await ctx.send("10 seconds left!")
+            await asyncio.sleep(5)
+            await ctx.send("5 seconds left!")
+            await asyncio.sleep(5)
+            self.current_game = False
+            self.entry = None
+            self.starttime = None
+            self.game_channel = None
 
 
-        embed = discord.Embed(title=f"Scores", color=0x00ff00)
+            embed = discord.Embed(title=f"Scores", color=0x00ff00)
     
-        for user in self.scores:
-            embed.add_field(name=user.display_name, value=f"Score: {self.scores[user]['pct']}%\nTime: {int(self.scores[user]['time'])} seconds", inline=False)
-        await ctx.send(embed=embed)
-        
+            for user in self.scores:
+                embed.add_field(name=user.display_name, value=f"Score: {self.scores[user]['pct']}%\nTime: {int(self.scores[user]['time'])} seconds", inline=False)
+            await ctx.send(embed=embed)
+        except:
+            self.game_starting = False
+            return await ctx.send("An error occurred. Please try again later.")
+            
+            
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.bot or message.channel != self.game_channel or message.content.startswith('!') or message.author in self.scores:
