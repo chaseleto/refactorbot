@@ -634,6 +634,20 @@ class Music(commands.Cog):
             if self.autoplay_: self.autoplay_ = False
         else:
             return
+    @commands.command(name='remove', aliases=['rm', 'delete', 'del'])
+    async def remove(self, ctx, index: int):
+        """Removes a track from the queue.
+
+        Parameters
+        ----------
+        index: int
+            The index of the track to remove.
+        """
+        try:
+            track = self.queue.pop(index - 1)
+            await ctx.send(f"Removed {track.title} from the queue.")
+        except IndexError:
+            await ctx.send("Invalid index.")
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
