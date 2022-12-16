@@ -573,8 +573,11 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
+            skipped_at = datetime.timedelta(seconds=vc.position)
             await vc.seek(vc.track.duration * 1000)
-            await reaction.message.channel.send(f"{user.mention} skipped the song")
+            skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {skipped_at} in and is now playing '{vc.queue[0].title}'")
+            await asyncio.sleep(5)
+            await skip_msg.delete()
 
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
