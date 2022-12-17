@@ -522,6 +522,8 @@ class Music(commands.Cog):
         query: str
             The query to search for.
         """
+        if not self.queue:
+            return await ctx.send('There is nothing in the queue.')
         track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
         self.queue.put_at_front(track)
         embed = discord.Embed(
