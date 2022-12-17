@@ -576,7 +576,7 @@ class Music(commands.Cog):
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
             skipped_at = datetime.timedelta(seconds=vc.position)
-            skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {skipped_at} in and is now playing '{vc.queue[0].title}'")
+            skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {skipped_at} in, and is now playing '{self.queue[0].title}'")
             await vc.seek(vc.track.duration * 1000)
             await asyncio.sleep(5)
             await skip_msg.delete()
@@ -615,7 +615,7 @@ class Music(commands.Cog):
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
             skipped_at = datetime.timedelta(seconds=vc.position)
-            skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {skipped_at} in and is now playing '{vc.queue[0].title}'")
+            skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {skipped_at} in, and is now playing '{self.queue[0].title}'")
             await vc.seek(vc.track.duration * 1000)
             await reaction.message.channel.send(f"{user.mention} skipped the song")
     @app_commands.command(name='pass_api_key')
