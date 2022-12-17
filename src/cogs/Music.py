@@ -575,10 +575,10 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
-            skipped_at = datetime.timedelta(seconds=vc.position)
+            skipped_at = round(datetime.timedelta(seconds=vc.position).total_seconds(), 2)
             skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and is now playing '{self.queue[0].title}'")
             await vc.seek(vc.track.duration * 1000)
-            await asyncio.sleep(5)
+            await asyncio.sleep(10)
             await skip_msg.delete()
 
     @commands.Cog.listener()
@@ -614,10 +614,11 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
-            skipped_at = datetime.timedelta(seconds=vc.position)
+            skipped_at = round(datetime.timedelta(seconds=vc.position).total_seconds(), 2)
             skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and is now playing '{self.queue[0].title}'")
             await vc.seek(vc.track.duration * 1000)
-            await reaction.message.channel.send(f"{user.mention} skipped the song")
+            await asyncio.sleep(10)
+            await skip_msg.delete()
     @app_commands.command(name='pass_api_key')
     async def pass_api_key(self, interaction: discord.Interaction, api_key: str):
         """Passes the google API key to the bot.
