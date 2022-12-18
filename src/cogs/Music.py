@@ -658,7 +658,7 @@ class Music(commands.Cog):
         """
         try:
             track = self.queue[index - 1]
-            self.queue.remove(track)
+            del self.queue._queue[index - 1]
             await ctx.send(f"Removed {track.title} from the queue.")
         except IndexError:
             await ctx.send("Invalid index.")
