@@ -576,7 +576,10 @@ class Music(commands.Cog):
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
             skipped_at = round(datetime.timedelta(seconds=vc.position).total_seconds(), 2)
-            skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and is now playing '{self.queue[0].title}'")
+            if self.queue:
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and is now playing '{self.queue[0].title}'")
+            else:
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and the queue is now empty.")
             await vc.seek(vc.track.duration * 1000)
             await asyncio.sleep(10)
             await skip_msg.delete()
@@ -615,7 +618,10 @@ class Music(commands.Cog):
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
             skipped_at = round(datetime.timedelta(seconds=vc.position).total_seconds(), 2)
-            skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and is now playing '{self.queue[0].title}'")
+            if self.queue:
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and is now playing '{self.queue[0].title}'")
+            else:
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and the queue is now empty.")
             await vc.seek(vc.track.duration * 1000)
             await asyncio.sleep(10)
             await skip_msg.delete()
@@ -648,10 +654,11 @@ class Music(commands.Cog):
         Parameters
         ----------
         index: int
-            The index of the track to remove.
+            The index of the track to remove. Default to last in queue.
         """
         try:
-            track = self.queue.pop(index - 1)
+            track = self.queue[index - 1]
+            self.queue.remove(track)
             await ctx.send(f"Removed {track.title} from the queue.")
         except IndexError:
             await ctx.send("Invalid index.")
