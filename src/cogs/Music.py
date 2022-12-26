@@ -195,7 +195,7 @@ class Music(commands.Cog):
         await self.now_playing_embed(ctx.voice_client)
     
     @commands.command(name='queue', aliases=['q', 'cue', 'qu'])
-    async def queued(self, ctx):
+    async def queued(self, ctx, page: int = 1):
         """Displays the current song queue.
 
         Parameters
@@ -209,21 +209,27 @@ class Music(commands.Cog):
         total_time_in_queue = 0
         for track in self.queue:
             total_time_in_queue += track.duration
-        
+        startIndex = (page - 1) * 9
+        totalPages = math.ceil(len(self.queue) / 9)
+        if startIndex > len(self.queue):
+            return await ctx.send(f"Page {page} doesn't exist.")
         embed = discord.Embed(
                 type="rich",
                 title=f"Now Playing: {vc.track.title}",
-                description=f"Total queued time: {str(datetime.timedelta(seconds=total_time_in_queue))}\n\nUp next:",
+                description=f"Total songs: {len(self.queue)}\nTotal queued time: {str(datetime.timedelta(seconds=total_time_in_queue))}\n\nUp next (page {page} of {totalPages}):",
                 color=discord.Color.random(),
                 timestamp=datetime.datetime.now(),
                 url=f"{vc.track.uri}"
             )
         for count, song in enumerate(self.queue):
+            if count < startIndex or count >= startIndex + 9:
+                continue
             requester = "Unknown"
             try:
                 requester = song.requester.mention
             except:
                 requester = "AutoPlayed"
+            
             embed.add_field(
                 name=f"{count+1}) {song}",
                 value=f"Duration: {str(datetime.timedelta(seconds=song.duration))}\nRequested by: {requester}",
