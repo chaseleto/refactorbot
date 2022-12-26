@@ -197,11 +197,12 @@ class Music(commands.Cog):
     
     @commands.command(name='queue', aliases=['q', 'cue', 'qu'])
     async def queued(self, ctx, page: int = 1):
-        """Displays the current song queue.
+        """Displays the current song queue. Displays 9 songs per page.
 
         Parameters
         ----------
-
+        page: int
+            The page to display
         """
         vc: wavelink.Player = ctx.voice_client
         if self.queue.is_empty:
