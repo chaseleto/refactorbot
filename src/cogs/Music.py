@@ -213,7 +213,7 @@ class Music(commands.Cog):
             total_time_in_queue += track.duration
         startIndex = (page - 1) * 9
         totalPages = math.ceil(len(self.queue) / 9)
-        if startIndex > len(self.queue):
+        if startIndex >= len(self.queue):
             return await ctx.send(f"Page {page} doesn't exist.")
         embed = discord.Embed(
                 type="rich",
