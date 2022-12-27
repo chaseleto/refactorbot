@@ -625,7 +625,7 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
-            skipped_at = round(datetime.timedelta(seconds=vc.position).total_seconds(), 2)
+            skipped_at = round(datetime.timedelta(seconds=vc.position * 1000).total_seconds(), 2)
             if self.queue:
                 skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and is now playing '{self.queue[0].title}'")
             else:
