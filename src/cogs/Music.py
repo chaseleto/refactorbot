@@ -79,7 +79,7 @@ class Music(commands.Cog):
         #Check if the bot has a player in the guild
         if not ctx.voice_client:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
-            vc.set_volume(50)
+            await vc.set_volume(50)
         else:
             vc: wavelink.Player = ctx.voice_client
 
