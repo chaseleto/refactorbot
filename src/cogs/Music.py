@@ -583,11 +583,11 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
-            skipped_at = round(datetime.timedelta(seconds=vc.position * 1000).total_seconds(), 2)
+            skipped_at = int(round(datetime.timedelta(seconds=vc.position).total_seconds(), 0))
             if self.queue:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} in, and is now playing {self.queue[0].title}")
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} seconds in, and is now playing {self.queue[0].title}")
             else:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} in, and the queue is now empty.")
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} seconds in, and the queue is now empty.")
             await vc.seek(vc.track.duration * 1000)
             await asyncio.sleep(15)
             await skip_msg.delete()
@@ -627,9 +627,9 @@ class Music(commands.Cog):
         elif reaction.emoji == "⏭":
             skipped_at = round(datetime.timedelta(seconds=vc.position * 1000).total_seconds(), 2)
             if self.queue:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} in, and is now playing {self.queue[0].title}")
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)[:1]} in, and is now playing {self.queue[0].title}")
             else:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} in, and the queue is now empty.")
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)[:1]} in, and the queue is now empty.")
             await vc.seek(vc.track.duration * 1000)
             await asyncio.sleep(10)
             await skip_msg.delete()
