@@ -682,15 +682,22 @@ class Music(commands.Cog):
         songs = []
         for song in query.split(","):
             try:
+                if song == " " or song == "":
+                    continue
                 songs.append(await wavelink.YouTubeTrack.search(query=song, return_first=True))
             except wavelink.NoTracksFound:
                 print("No track found for {song}.")
         if ctx.voice_client:
+            if songs == []:
+                await ctx.send("No songs found.")
+                return
             for track in songs:
                 self.queue.put(track)
             await ctx.send(f"Added {len(songs)} songs to the queue.")
         else:
-            
+            if songs == []:
+                await ctx.send("No songs found.")
+                return
                 #Check if the bot has a player in the guild
             if not ctx.voice_client:
                 try:
