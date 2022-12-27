@@ -265,7 +265,7 @@ class Music(commands.Cog):
         except:
             requester = "AutoPlayed"
             vc.track.requester = "AutoPlayed"
-        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
+        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}\nVolume: {vc.volume}%**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
         thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
         embed.set_thumbnail(url=f"{thumb}")
         msg = await music_channel.send(content="ɴᴏᴡ ᴘʟᴀʏɪɴɢ", embed=embed)
@@ -280,7 +280,7 @@ class Music(commands.Cog):
 
         while datetime.timedelta(seconds=int(vc.position)) < datetime.timedelta(seconds=vc.track.length):
             
-            embed.description = f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}**\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
+            embed.description = f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}\nVolume: {vc.volume}%**\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
             try:
                 await msg.edit(embed=embed)
             except:
@@ -670,6 +670,43 @@ class Music(commands.Cog):
             await ctx.send(f"Removed {track.title} from the queue.")
         except IndexError:
             await ctx.send("Invalid index.")
-
+    @commands.command(name='add', aliases=['a'])
+    async def addSongs(self, ctx, *, query: str):
+        """Adds multiple songs to the queue, seperated by commas (,). Ex. .add song1, song2, song3.
+        
+        Parameters
+        ----------
+        query: str
+            The queries to search for.
+        """
+        songs = []
+        for song in query.split(","):
+            try:
+                songs.append(await wavelink.YouTubeTrack.search(query=song, return_first=True))
+            except wavelink.NoTracksFound:
+                print("No track found for {song}.")
+        if ctx.voice_client:
+            for track in songs:
+                self.queue.put(track)
+            await ctx.send(f"Added {len(songs)} songs to the queue.")
+        else:
+            
+                #Check if the bot has a player in the guild
+            if not ctx.voice_client:
+                try:
+                    vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+                    await vc.set_volume(50)
+                except:
+                    await ctx.send("Please join a voice channel first.")
+                    return
+            else:
+                vc: wavelink.Player = ctx.voice_client
+            
+            for track in songs:
+                self.queue.put(track)
+            await ctx.send(f"Added {len(songs)} songs to the queue.")
+            await vc.play(self.queue.get())
+            await self.now_playing_embed(vc)
+            
 async def setup(bot):
     await bot.add_cog(Music(bot))
