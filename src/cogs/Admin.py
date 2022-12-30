@@ -38,7 +38,7 @@ class Admin(commands.Cog):
 
     @commands.command(name="ping", description="Returns the bot's latency.")
     async def ping(self, ctx):
-        await ctx.send(f"Latency: {self.bot.latency * 1000:.2f}ms")
+        await ctx.send(f"Latency: {self.bot.latency * 1000:.2f}ms.")
 
     @app_commands.command(name="ping", description="Pings the bot")
     async def ping(self, interaction: discord.Interaction):
