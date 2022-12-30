@@ -3,6 +3,7 @@ function startup {
     chmod +x scripts/docker_install.sh && \
     chmod +x scripts/volumes.sh && \
     chmod +x scripts/portainer.sh && \
+    chmod +x scripts/restart.sh && \
     ./scripts/docker_install.sh -y && \ # add logic to check if docker is installed first
     ./scripts/volumes.sh && \
     ./scripts/portainer.sh && \  # portainer used for ease of monitoring
