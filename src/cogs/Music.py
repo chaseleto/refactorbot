@@ -54,7 +54,8 @@ class Music(commands.Cog):
     autoplay_ = False
     GOOGLE_API_KEY = None
     max_duration = None
-
+    music_channel = None
+    
     @commands.command(name='play', aliases=['p'])
     async def play(self, ctx, *, query):
         """Plays a song from youtube.
@@ -67,7 +68,8 @@ class Music(commands.Cog):
         collection = self.mg['discord']['guilds']
         music_channel = None
         try:
-            music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+            self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+            music_channel = self.music_channel
         except:
             print("something went wrong")
         if music_channel is None:
@@ -214,12 +216,11 @@ class Music(commands.Cog):
         """
         if self.music_channel is None:
             collection = self.mg['discord']['guilds']
-            music_channel = None
             try:
-                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+                self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if music_channel is None:
+            if self.music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         vc: wavelink.Player = ctx.voice_client
@@ -328,12 +329,11 @@ class Music(commands.Cog):
         """
         if self.music_channel is None:
             collection = self.mg['discord']['guilds']
-            music_channel = None
             try:
-                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+                self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if music_channel is None:
+            if self.music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         enabled_message = 'Autoplay has been enabled.'
@@ -560,12 +560,11 @@ class Music(commands.Cog):
         """
         if self.music_channel is None:
             collection = self.mg['discord']['guilds']
-            music_channel = None
             try:
-                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+                self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if music_channel is None:
+            if self.music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         if not self.queue:
@@ -719,12 +718,11 @@ class Music(commands.Cog):
         """
         if self.music_channel is None:
             collection = self.mg['discord']['guilds']
-            music_channel = None
             try:
-                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+                self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if music_channel is None:
+            if self.music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         songs = []
