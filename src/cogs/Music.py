@@ -1,3 +1,4 @@
+import math
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -78,7 +79,7 @@ class Music(commands.Cog):
         #Check if the bot has a player in the guild
         if not ctx.voice_client:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
-            vc.set_volume(50)
+            await vc.set_volume(50)
         else:
             vc: wavelink.Player = ctx.voice_client
 
@@ -195,12 +196,13 @@ class Music(commands.Cog):
         await self.now_playing_embed(ctx.voice_client)
     
     @commands.command(name='queue', aliases=['q', 'cue', 'qu'])
-    async def queued(self, ctx):
-        """Displays the current song queue.
+    async def queued(self, ctx, page: int = 1):
+        """Displays the current song queue. Displays 9 songs per page.
 
         Parameters
         ----------
-
+        page: int
+            The page to display
         """
         vc: wavelink.Player = ctx.voice_client
         if self.queue.is_empty:
@@ -209,21 +211,27 @@ class Music(commands.Cog):
         total_time_in_queue = 0
         for track in self.queue:
             total_time_in_queue += track.duration
-        
+        startIndex = (page - 1) * 9
+        totalPages = math.ceil(len(self.queue) / 9)
+        if startIndex >= len(self.queue):
+            return await ctx.send(f"Page {page} doesn't exist.")
         embed = discord.Embed(
                 type="rich",
                 title=f"Now Playing: {vc.track.title}",
-                description=f"Total queued time: {str(datetime.timedelta(seconds=total_time_in_queue))}\n\nUp next:",
+                description=f"Total songs: {len(self.queue)}\nTotal queued time: {str(datetime.timedelta(seconds=total_time_in_queue))}\n\nUp next (page {page} of {totalPages}):",
                 color=discord.Color.random(),
                 timestamp=datetime.datetime.now(),
                 url=f"{vc.track.uri}"
             )
         for count, song in enumerate(self.queue):
+            if count < startIndex or count >= startIndex + 9:
+                continue
             requester = "Unknown"
             try:
                 requester = song.requester.mention
             except:
                 requester = "AutoPlayed"
+            
             embed.add_field(
                 name=f"{count+1}) {song}",
                 value=f"Duration: {str(datetime.timedelta(seconds=song.duration))}\nRequested by: {requester}",
@@ -257,7 +265,7 @@ class Music(commands.Cog):
         except:
             requester = "AutoPlayed"
             vc.track.requester = "AutoPlayed"
-        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
+        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}\nVolume: {vc.volume}%**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
         thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
         embed.set_thumbnail(url=f"{thumb}")
         msg = await music_channel.send(content="ɴᴏᴡ ᴘʟᴀʏɪɴɢ", embed=embed)
@@ -272,7 +280,7 @@ class Music(commands.Cog):
 
         while datetime.timedelta(seconds=int(vc.position)) < datetime.timedelta(seconds=vc.track.length):
             
-            embed.description = f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}**\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
+            embed.description = f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}\nVolume: {vc.volume}%**\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
             try:
                 await msg.edit(embed=embed)
             except:
@@ -575,13 +583,13 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
-            skipped_at = round(datetime.timedelta(seconds=vc.position).total_seconds(), 2)
+            skipped_at = int(round(datetime.timedelta(seconds=vc.position).total_seconds(), 0))
             if self.queue:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and is now playing '{self.queue[0].title}'")
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} seconds in, and is now playing {self.queue[0].title}")
             else:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} in, and the queue is now empty.")
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} seconds in, and the queue is now empty.")
             await vc.seek(vc.track.duration * 1000)
-            await asyncio.sleep(10)
+            await asyncio.sleep(15)
             await skip_msg.delete()
 
     @commands.Cog.listener()
@@ -617,11 +625,11 @@ class Music(commands.Cog):
             else:
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
-            skipped_at = round(datetime.timedelta(seconds=vc.position).total_seconds(), 2)
+            skipped_at = round(datetime.timedelta(seconds=vc.position * 1000).total_seconds(), 2)
             if self.queue:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} seconds in, and is now playing '{self.queue[0].title}'")
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)[:1]} in, and is now playing {self.queue[0].title}")
             else:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped '{vc.track.title}' {str(skipped_at)} seconds in, and the queue is now empty.")
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)[:1]} in, and the queue is now empty.")
             await vc.seek(vc.track.duration * 1000)
             await asyncio.sleep(10)
             await skip_msg.delete()
@@ -662,6 +670,52 @@ class Music(commands.Cog):
             await ctx.send(f"Removed {track.title} from the queue.")
         except IndexError:
             await ctx.send("Invalid index.")
-
+    @commands.command(name='add', aliases=['a'])
+    async def addSongs(self, ctx, *, query: str):
+        """Adds multiple songs to the queue, seperated by commas (,). Ex. .add song1, song2, song3.
+        
+        Parameters
+        ----------
+        query: str
+            The queries to search for.
+        """
+        songs = []
+        for song in query.split(","):
+            try:
+                if song == " " or song == "":
+                    continue
+                songs.append(await wavelink.YouTubeTrack.search(query=song, return_first=True))
+            except wavelink.NoTracksFound:
+                print("No track found for {song}.")
+        if ctx.voice_client:
+            if songs == []:
+                await ctx.send("No songs found.")
+                return
+            for track in songs:
+                track.requester = ctx.author
+                self.queue.put(track)
+            await ctx.send(f"Added {len(songs)} songs to the queue.")
+        else:
+            if songs == []:
+                await ctx.send("No songs found.")
+                return
+                #Check if the bot has a player in the guild
+            if not ctx.voice_client:
+                try:
+                    vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+                    await vc.set_volume(50)
+                except:
+                    await ctx.send("Please join a voice channel first.")
+                    return
+            else:
+                vc: wavelink.Player = ctx.voice_client
+            
+            for track in songs:
+                track.requester = ctx.author
+                self.queue.put(track)
+            await ctx.send(f"Added {len(songs)} songs to the queue.")
+            await vc.play(self.queue.get())
+            await self.now_playing_embed(vc)
+            
 async def setup(bot):
     await bot.add_cog(Music(bot))
