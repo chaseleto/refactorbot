@@ -103,7 +103,6 @@ class Music(commands.Cog):
         if not vc.is_playing() and self.queue.is_empty:
             await vc.play(track)
             await asyncio.sleep(1)
-            await self.now_playing_embed(vc)
             self.context = ctx
         else:
             self.queue.put(track)
@@ -115,7 +114,6 @@ class Music(commands.Cog):
         if self.queue.is_empty:
             return await player.disconnect()
         await player.play(self.queue.get())
-        await self.now_playing_embed(player)
         
     @commands.command(name='skip')
     async def skip(self, ctx):
@@ -144,6 +142,16 @@ class Music(commands.Cog):
         ----------
 
         """
+        if self.music_channel is None:
+            collection = self.mg['discord']['guilds']
+            music_channel = None
+            try:
+                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+            except:
+                print("something went wrong")
+            if music_channel is None:
+                await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
+                return
         vc: wavelink.Player = ctx.voice_client
         await self.now_playing_embed(ctx.voice_client)
 
@@ -204,6 +212,16 @@ class Music(commands.Cog):
         page: int
             The page to display
         """
+        if self.music_channel is None:
+            collection = self.mg['discord']['guilds']
+            music_channel = None
+            try:
+                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+            except:
+                print("something went wrong")
+            if music_channel is None:
+                await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
+                return
         vc: wavelink.Player = ctx.voice_client
         if self.queue.is_empty:
             return await ctx.send('The queue is empty.')
@@ -293,7 +311,7 @@ class Music(commands.Cog):
         If a max duration is specified, the bot will ONLY add songs that are shorter than the specified duration.
 
         You MUST pass a google api key to the bot for this to work. You can get one here: https://developers.google.com/youtube/v3/getting-started. 
-        Once you have your key, run the command `!set google_api_key <your key here>`. You will only need to do this once but you may update it as much as you would like. 
+        Once you have your key, run the command `/set_google_api_key <your key here>`. You will only need to do this once but you may update it as much as you would like. 
 
         Each key has a quota of 10,000 units per day. Each call to the API is 100 units. If you are using the bot in a large server, you may want to consider getting a key with a higher quota.
 
@@ -308,7 +326,16 @@ class Music(commands.Cog):
         max_duration: int
             The maximum duration of songs to add to the queue automatically 
         """
-
+        if self.music_channel is None:
+            collection = self.mg['discord']['guilds']
+            music_channel = None
+            try:
+                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+            except:
+                print("something went wrong")
+            if music_channel is None:
+                await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
+                return
         enabled_message = 'Autoplay has been enabled.'
         
         
@@ -350,7 +377,7 @@ class Music(commands.Cog):
                             print("Couldn't add related video to queue.")
 
             elif not await self.check_api_key(ctx):
-                await ctx.send('Your API key is invalid.')
+                await ctx.send('Your API key is invalid. Please set it by using the slash command `/set_google_api_key <your key here>`.')
                 self.autoplay_ = False
 
     async def check_api_key(self, ctx):
@@ -400,6 +427,7 @@ class Music(commands.Cog):
         print("track started")
         collection = self.mg['discord']['guilds']
         music_channel = None
+        await self.now_playing_embed(player)
         try:
             music_channel = player.guild.get_channel(int(collection.find_one({'guild_id': player.guild.id})['music_channel_id']))
         except:
@@ -530,6 +558,16 @@ class Music(commands.Cog):
         query: str
             The query to search for.
         """
+        if self.music_channel is None:
+            collection = self.mg['discord']['guilds']
+            music_channel = None
+            try:
+                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+            except:
+                print("something went wrong")
+            if music_channel is None:
+                await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
+                return
         if not self.queue:
             return await ctx.send('There is nothing in the queue.')
         track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
@@ -679,6 +717,16 @@ class Music(commands.Cog):
         query: str
             The queries to search for.
         """
+        if self.music_channel is None:
+            collection = self.mg['discord']['guilds']
+            music_channel = None
+            try:
+                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+            except:
+                print("something went wrong")
+            if music_channel is None:
+                await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
+                return
         songs = []
         for song in query.split(","):
             try:
@@ -715,7 +763,6 @@ class Music(commands.Cog):
                 self.queue.put(track)
             await ctx.send(f"Added {len(songs)} songs to the queue.")
             await vc.play(self.queue.get())
-            await self.now_playing_embed(vc)
             
 async def setup(bot):
     await bot.add_cog(Music(bot))
