@@ -10,25 +10,25 @@ import datetime
 # Logging
 logger = logging.getLogger('discord')
 logger.setLevel(logging.ERROR)
-handler = logging.FileHandler(filename='/home/src/discord.log', encoding='utf-8', mode='w')
+handler = logging.FileHandler(filename='src/discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
 #config
-with open('/home/src/config/cfg.yml', 'r') as f:
+with open('src/config/cfg.yml', 'r') as f:
     config = yaml.safe_load(f)
 
 #MongoDB
-mg = MongoClient('mongodb', 27017,
-                username=os.environ['MONGO_USER'],
-                password=os.environ['MONGO_PASSWORD'])
+#mg = MongoClient('mongodb', 27017,
+                #username=os.environ['MONGO_USER'],
+                #password=os.environ['MONGO_PASSWORD'])
 
 # Bot
 bot = commands.Bot(command_prefix=config['Bot_prefix'], description='SER Bot refactored.', case_insensitive=True, owner_id=238047264839303179, intents=discord.Intents.all())
 
 #Load cogs
 async def load():
-    for file in os.listdir('/home/src/cogs'):
+    for file in os.listdir('src/cogs'):
         if file.endswith('.py'):
             await bot.load_extension(f'cogs.{file[:-3]}')
             print(f'{file[:-3]} cog loaded.')
@@ -44,8 +44,8 @@ async def on_ready():
     try:
         for guild in bot.guilds:
             print(guild.name)
-            collection = mg['discord']['guilds']
-            collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None, 'music_channel_id': None})
+            #collection = mg['discord']['guilds']
+            #collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None, 'music_channel_id': None})
     except:
         print("Guild already in database.")
 #When login is successful
@@ -63,7 +63,8 @@ async def on_connect():
 
 #Login and connect
 async def main():
-    token = os.getenv("DISCORD_SECRET")
+    #token = os.getenv("DISCORD_SECRET")
+    token = config['Bot_token']
     await bot.start(token)
 
 #Run the bot
