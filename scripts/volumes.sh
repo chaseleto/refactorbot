@@ -49,4 +49,3 @@ fi
 
 # Copy source code to the volume
 sudo cp -Rp src /opt/docker/discordbot_data/src/
-sudo cp -Rp lavalink /opt/docker/lavalink_data/lavalink/
