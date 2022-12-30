@@ -6,4 +6,4 @@ cd /refactorbot/ && \
 sudo git pull  && \
 sudo cp -Rp src /opt/docker/discordbot_data/src/ && \
 sudo ./scripts/volumes.sh && \
-sudo docker compose restart refactorbot-discordbot-1
+sudo docker compose -f smoot-compose.yml up -d
