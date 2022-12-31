@@ -88,7 +88,8 @@ class Music(commands.Cog):
         #Check if the bot has a player in the guild
         if not ctx.voice_client:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
-            self.dj_ids.append(ctx.author.id)
+            if ctx.author.id not in self.dj_ids:
+                self.dj_ids.append(ctx.author.id)
             await vc.set_volume(50)
         else:
             vc: wavelink.Player = ctx.voice_client
@@ -310,11 +311,13 @@ class Music(commands.Cog):
         except:
             requester = "AutoPlayed"
             vc.track.requester = "AutoPlayed"
-        current_djs = ""
-        for dj in self.dj_ids:
-            current_djs += f"{voice_player.guild.get_member(dj).mention}, "
-        if current_djs == "":
-            current_djs = "None"
+        current_djs = "None"
+        if self.dj_lock:
+            current_djs = ""
+            for dj in self.dj_ids:
+                current_djs += f"{voice_player.guild.get_member(dj).mention}, "
+            if current_djs == "":
+                current_djs = "None"
         embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}\nVolume: {vc.volume}%\nCurrent DJs: {current_djs}**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
         thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
         embed.set_thumbnail(url=f"{thumb}")
@@ -553,6 +556,8 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
+        if ctx.author.id not in self.dj_ids:
+            self.dj_ids.append(ctx.author.id)
         vc: wavelink.Player = ctx.voice_client
         if not vc:
             try:
@@ -571,6 +576,10 @@ class Music(commands.Cog):
         index: int
             The index of the song to play next.
         """
+        if self.dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in self.dj_ids:
+                await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
+                return
         vc: wavelink.Player = ctx.voice_client
         if not vc:
             return await ctx.send('I am not connected to a voice channel.')
@@ -610,6 +619,9 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
+        
+        if ctx.author.id not in self.dj_ids:
+            self.dj_ids.append(ctx.author.id)
         if self.music_channel is None:
             collection = self.mg['discord']['guilds']
             try:
@@ -785,6 +797,8 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
+        if ctx.author.id not in self.dj_ids:
+            self.dj_ids.append(ctx.author.id)
         if self.music_channel is None:
             collection = self.mg['discord']['guilds']
             try:
@@ -838,8 +852,9 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
+        if ctx.author.id not in self.dj_ids:
+            self.dj_ids.append(ctx.author.id)
         self.dj_lock = True
-        self.dj_ids.append(ctx.author.id)
         await ctx.send("Locked the queue.")
     @commands.command(name='unlock', aliases=['ul'])
     async def unlock(self, ctx):
@@ -862,5 +877,18 @@ class Music(commands.Cog):
             self.dj_ids = []
         self.dj_ids.append(member.id)
         await ctx.send(f"Added {member.name} to the list of DJ's.")
+    @commands.command(name='djs', aliases=['ds', 'djslist', 'djlist'])
+    async def djs(self, ctx):
+        """Shows the list of DJ's."""
+        if self.dj_ids is None:
+            await ctx.send("There are no DJ's.")
+            return
+        if self.dj_ids == []:
+            await ctx.send("There are no DJ's.")
+            return
+        djs = ""
+        for dj in self.dj_ids:
+            djs += f"{ctx.guild.get_member(dj).mention}"
+        await ctx.send(f"DJ's: {djs}")
 async def setup(bot):
     await bot.add_cog(Music(bot))
