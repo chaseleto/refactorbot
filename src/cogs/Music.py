@@ -111,21 +111,21 @@ class Music(commands.Cog):
         )
         track.requester = ctx.author
         #Add track to queue or play if queue is empty and not playing
-        if not vc.is_playing() and self.queue.is_empty:
+        
+        if not vc.is_playing() and vc.queue.is_empty:
             await vc.play(track)
             await asyncio.sleep(1)
-            self.context = ctx
         else:
-            self.queue.put(track)
+            vc.queue.put(track)
             await ctx.send(content="Added to queue:", embed=embed)
     
     @commands.Cog.listener()
     async def on_wavelink_track_end(self, player: wavelink.Player, track: wavelink.Track, reason: str):
         """Event fired when a track has finished playing."""
-        if self.queue.is_empty:
+        if player.queue.is_empty:
             dj_ids = []
             return await player.disconnect()
-        await player.play(self.queue.get())
+        await player.play(player.queue.get())
         
     @commands.command(name='skip')
     async def skip(self, ctx):
@@ -143,7 +143,7 @@ class Music(commands.Cog):
         vc: wavelink.Player = ctx.voice_client
         if not vc.is_playing():
             return await ctx.send('I am not playing anything right now.')
-        if self.queue.is_empty:
+        if vc.queue.is_empty:
             await vc.stop()
         else:
             await vc.seek(vc.track.length * 1000)
@@ -251,25 +251,25 @@ class Music(commands.Cog):
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         vc: wavelink.Player = ctx.voice_client
-        if self.queue.is_empty:
+        if vc.queue.is_empty:
             return await ctx.send('The queue is empty.')
-        queue = self.queue
+        queue = vc.queue
         total_time_in_queue = 0
-        for track in self.queue:
+        for track in vc.queue:
             total_time_in_queue += track.duration
         startIndex = (page - 1) * 9
-        totalPages = math.ceil(len(self.queue) / 9)
-        if startIndex >= len(self.queue):
+        totalPages = math.ceil(len(vc.queue) / 9)
+        if startIndex >= len(vc.queue):
             return await ctx.send(f"Page {page} doesn't exist.")
         embed = discord.Embed(
                 type="rich",
                 title=f"Now Playing: {vc.track.title}",
-                description=f"Total songs: {len(self.queue)}\nTotal queued time: {str(datetime.timedelta(seconds=total_time_in_queue))}\n\nUp next (page {page} of {totalPages}):",
+                description=f"Total songs: {len(vc.queue)}\nTotal queued time: {str(datetime.timedelta(seconds=total_time_in_queue))}\n\nUp next (page {page} of {totalPages}):",
                 color=discord.Color.random(),
                 timestamp=datetime.datetime.now(),
                 url=f"{vc.track.uri}"
             )
-        for count, song in enumerate(self.queue):
+        for count, song in enumerate(vc.queue):
             if count < startIndex or count >= startIndex + 9:
                 continue
             requester = "Unknown"
@@ -377,18 +377,18 @@ class Music(commands.Cog):
             max_duration = max_duration * 60
             self.max_duration = max_duration
             enabled_message += f' Songs will be limited to {int(max_duration/60)} minutes.'
-
+        vc: wavelink.Player = self.bot.wavelink.get_player(ctx.guild.id, cls=wavelink.Player, context=ctx)
         if self.autoplay_:
             self.autoplay_ = False
             await ctx.send('Autoplay has been disabled.')
             removeList = []
-            for song in self.queue._queue:
+            for song in vc.queue._queue:
                 if song.requester == "AutoPlayed":
                     removeList.append(song)
                     print(f"removing: {song} because requester: {song.requester}")
             for track in removeList:
                 try:
-                    del self.queue._queue[self.queue.find_position(track)]
+                    del vc.queue._queue[vc.queue.find_position(track)]
                     print(f"Removed {track}")
                 except:
                     print(f"failed to remove track {track}")
@@ -404,9 +404,9 @@ class Music(commands.Cog):
                             track = await wavelink.YouTubeTrack.search("https://www.youtube.com/watch?v=" + related_video, return_first=True)
                             track.requester = "AutoPlayed"
                             if max_duration and track.length <= max_duration:
-                                self.queue.put(track)
+                                vc.queue.put(track)
                             elif not max_duration:
-                                self.queue.put(track)
+                                vc.queue.put(track)
                         except :
                             print("Couldn't add related video to queue.")
 
@@ -469,7 +469,7 @@ class Music(commands.Cog):
         if music_channel is None:
             return
         guild = player.guild.id
-        if self.autoplay_ and self.queue.count <= 2:
+        if self.autoplay_ and player.queue.count <= 2:
             related = await self.get_related_videos(track.identifier, guild)
             if not related:
                 await music_channel.send("Could not add related video to queue. This is likely due to exceeding your daily quota of 10,000 units. Please try again tomorrow or update your Google API Key. More: !help autoplay")
@@ -480,9 +480,9 @@ class Music(commands.Cog):
                     track = await wavelink.YouTubeTrack.search("https://www.youtube.com/watch?v=" + related_video, return_first=True)
                     track.requester = "AutoPlayed"
                     if self.max_duration and track.duration <= self.max_duration:
-                        self.queue.put(track)
+                        player.queue.put(track)
                     elif not self.max_duration:
-                        self.queue.put(track)
+                        player.queue.put(track)
                 except :
                     print("Couldn't add related video to queue.")
         else:
@@ -496,12 +496,13 @@ class Music(commands.Cog):
         ----------
 
         """
+        vc: wavelink.Player = ctx.voice_client
         if self.dj_ids is not None and self.dj_lock:
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
 
-        self.queue.clear()
+        vc.queue.clear()
         await ctx.send('Cleared the queue.')
     
     @commands.command(name='disconnect', aliases=['dc', 'leave'])
@@ -521,7 +522,7 @@ class Music(commands.Cog):
             return await ctx.send('I am not connected to a voice channel.')
         await vc.disconnect()
         await ctx.send('Disconnected from the voice channel.')
-        self.queue.clear()
+        vc.queue.clear()
         if self.autoplay_: self.autoplay_ = False
     
     @commands.command(name='volume', aliases=['vol'])
@@ -583,11 +584,11 @@ class Music(commands.Cog):
         vc: wavelink.Player = ctx.voice_client
         if not vc:
             return await ctx.send('I am not connected to a voice channel.')
-        if not 0 < index <= self.queue.count:
+        if not 0 < index <= vc.queue.count:
             return await ctx.send('Please enter a valid index.')
-        track = self.queue[index - 1]
-        self.queue.__delitem__(index - 1)
-        self.queue.put_at_front(track)
+        track = vc.queue[index - 1]
+        vc.queue.__delitem__(index - 1)
+        vc.queue.put_at_front(track)
 
         embed = discord.Embed(
             type="rich",
@@ -619,7 +620,7 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        
+        vc: wavelink.Player = ctx.voice_client
         if ctx.author.id not in self.dj_ids:
             self.dj_ids.append(ctx.author.id)
         if self.music_channel is None:
@@ -631,10 +632,10 @@ class Music(commands.Cog):
             if self.music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
-        if not self.queue:
+        if not vc.queue:
             return await ctx.send('There is nothing in the queue.')
         track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
-        self.queue.put_at_front(track)
+        vc.queue.put_at_front(track)
         embed = discord.Embed(
             type="rich",
             title=f"{track.title}",
@@ -690,8 +691,8 @@ class Music(commands.Cog):
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
             skipped_at = int(round(datetime.timedelta(seconds=vc.position).total_seconds(), 0))
-            if self.queue:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} seconds in, and is now playing {self.queue[0].title}")
+            if vc.queue:
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} seconds in, and is now playing {vc.queue[0].title}")
             else:
                 skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)} seconds in, and the queue is now empty.")
             await vc.seek(vc.track.duration * 1000)
@@ -735,8 +736,8 @@ class Music(commands.Cog):
                 await vc.seek((vc.position + 15) * 1000)
         elif reaction.emoji == "⏭":
             skipped_at = round(datetime.timedelta(seconds=vc.position * 1000).total_seconds(), 2)
-            if self.queue:
-                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)[:1]} in, and is now playing {self.queue[0].title}")
+            if vc.queue:
+                skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)[:1]} in, and is now playing {vc.queue[0].title}")
             else:
                 skip_msg = await reaction.message.channel.send(f"{user.mention} skipped {vc.track.title} {str(skipped_at)[:1]} in, and the queue is now empty.")
             await vc.seek(vc.track.duration * 1000)
@@ -760,8 +761,8 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member):
         if member == self.bot.user:
-            self.queue.clear()
-            if self.autoplay_: self.autoplay_ = False
+            if self.autoplay_:
+                 self.autoplay_ = False
         else:
             return
     @commands.command(name='remove', aliases=['rm', 'delete', 'del'])
@@ -777,10 +778,10 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-
+        vc: wavelink.Player = ctx.guild.voice_client
         try:
-            track = self.queue[index - 1]
-            del self.queue._queue[index - 1]
+            track = vc.queue[index - 1]
+            del vc.queue._queue[index - 1]
             await ctx.send(f"Removed {track.title} from the queue.")
         except IndexError:
             await ctx.send("Invalid index.")
@@ -822,7 +823,7 @@ class Music(commands.Cog):
                 return
             for track in songs:
                 track.requester = ctx.author
-                self.queue.put(track)
+                vc.queue.put(track)
             await ctx.send(f"Added {len(songs)} songs to the queue.")
         else:
             if songs == []:
@@ -841,9 +842,9 @@ class Music(commands.Cog):
             
             for track in songs:
                 track.requester = ctx.author
-                self.queue.put(track)
+                vc.queue.put(track)
             await ctx.send(f"Added {len(songs)} songs to the queue.")
-            await vc.play(self.queue.get())
+            await vc.play(vc.queue.get())
 
     @commands.command(name='lock', aliases=['l'])
     async def lock(self, ctx):

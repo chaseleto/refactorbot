@@ -44,7 +44,24 @@ async def on_guild_join(guild):
     try:
         print(guild.name)
         collection = mg['discord']['guilds']
-        collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None, 'music_channel_id': None})
+        collection.insert_one({
+            'guild_id': guild.id,
+            'guild_name': guild.name,
+            'guild_owner': guild.owner.id,
+            'guild_owner_name': guild.owner.name,
+            'guild_member_count': guild.member_count,
+            'guild_created_at': guild.created_at,
+            'bot_join_date': datetime.datetime.utcnow(),
+            'has_api_key': False, 'google_api_key': None,
+            'music_channel_id': None,
+            'play_tracking_message_id': None,
+            'autoplay_max_duration': None,
+            'dj_lock': False,
+            'dj_role_id': None,
+            'dj_ids': [],
+            'autoplay': False,
+            
+            })
     except:
         print("Guild already in database.")
 @bot.event
