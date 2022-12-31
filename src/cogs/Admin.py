@@ -13,6 +13,7 @@ class Admin(commands.Cog):
                      password=os.environ['MONGO_PASSWORD'])
 
     @commands.command(name='restartbot', description='Restarts the bot.')
+    @commands.is_owner()
     async def restartbot(self, ctx):
         if not ctx.author.id == 238047264839303179:
             return
