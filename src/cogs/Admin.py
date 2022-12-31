@@ -12,6 +12,17 @@ class Admin(commands.Cog):
                      username=os.environ['MONGO_USER'],
                      password=os.environ['MONGO_PASSWORD'])
 
+    @commands.command(name='restartbot', description='Restarts the bot.')
+    async def restartbot(self, ctx):
+        if not ctx.author.id == 238047264839303179:
+            return
+        await ctx.send('Restarting... this may take up to 45 seconds.')
+        try:
+            os.system('gcloud compute ssh discordbot --zone=us-central1-a \
+	        --command="cd refactorbot/scripts && sudo ./restart.sh"')
+        except Exception as e:
+            await ctx.send(f'Error: {e}')
+
     #############################################################################################################################################################
     #                                                                         Channel Setup Commands                                                            #
     #############################################################################################################################################################
