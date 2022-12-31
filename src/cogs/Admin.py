@@ -17,7 +17,7 @@ class Admin(commands.Cog):
     async def restartbot(self, ctx):
         if not ctx.author.id == 238047264839303179:
             return
-        await ctx.send('Restarting... this may take up to 45 seconds.')
+        await ctx.send('Restarting... this process may take up to a minute.')
         try:
             os.system('gcloud compute ssh discordbot --zone=us-central1-a \
 	        --command="cd refactorbot/scripts && sudo ./restart.sh"')
@@ -54,7 +54,7 @@ class Admin(commands.Cog):
 
     @app_commands.command(name="ping", description="Pings the bot")
     async def ping(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f"Latency: {self.bot.latency * 1000:.2f}ms.")
+        await interaction.response.send_message(f"Latency: {self.bot.latency * 1000:.2f}ms")
 
     # USER INFO COMMAND
     @commands.command(name="user", description="Gets a user's info")
