@@ -40,20 +40,16 @@ async def on_message(message):
         return
     await bot.process_commands(message)
 @bot.event
-async def on_ready():
+async def on_guild_join(guild):
     try:
-        for guild in bot.guilds:
-            print(guild.name)
-            collection = mg['discord']['guilds']
-            collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None, 'music_channel_id': None})
+        print(guild.name)
+        collection = mg['discord']['guilds']
+        collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None, 'music_channel_id': None})
     except:
         print("Guild already in database.")
-#When login is successful
 @bot.event
-async def on_connect():
-    print(f'Logged in as {bot.user.name} ({bot.user.id})')
-    print('------')
-        #sends reconnect message to the channel that the restartbot command was given in (if it was given)
+async def on_ready():
+    #sends reconnect message to the channel that the restartbot command was given in (if it was given)
     try:
         for guild in bot.guilds:
             collection = mg['discord']['guilds']
@@ -66,13 +62,17 @@ async def on_connect():
     except Exception as e:
         print("No restart channel found.")
         print(e)
+#When login is successful
+@bot.event
+async def on_connect():
+    print(f'Logged in as {bot.user.name} ({bot.user.id})')
+    print('------')
     await load()
     try:
         synced = await bot.tree.sync()
         print(f'Synced {len(synced)} commands.')
     except Exception as e:
         print(f'Failed to sync commands: {e}')
-    
 
 
 #Login and connect
