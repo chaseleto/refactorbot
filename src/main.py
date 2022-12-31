@@ -53,12 +53,13 @@ async def on_ready():
         for guild in bot.guilds:
             collection = mg['discord']['guilds']
             restarted = collection.find_one({'guild_id': guild.id}['restarted'])
-            if restarted == True:
+            if restarted == True or restarted == "True" or restarted == "true":
                 channel = bot.get_channel(collection.find_one({'guild_id': guild.id}['restart_channel_id']))
                 await channel.send("Reconnected!")
                 collection.update_one({'guild_id': guild.id}, {'$set': {'restarted': False}})
-    except:
+    except Exception as e:
         print("No restart channel found.")
+        print(e)
 #When login is successful
 @bot.event
 async def on_connect():
