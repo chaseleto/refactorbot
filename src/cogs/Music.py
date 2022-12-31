@@ -139,8 +139,10 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            return await ctx.send('I am not in a voice channel.')
         if not vc.is_playing():
             return await ctx.send('I am not playing anything right now.')
         if vc.queue.is_empty:
@@ -169,7 +171,10 @@ class Music(commands.Cog):
             if music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            return await ctx.send('I am not in a voice channel.')
         await self.now_playing_embed(ctx.voice_client)
 
     @commands.command(name='pause', aliases=['stop'])
@@ -184,7 +189,10 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            return await ctx.send('I am not in a voice channel.')
         if not vc.is_playing():
             return await ctx.send('I am not playing anything right now.')
         await vc.pause()
@@ -202,7 +210,10 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            return await ctx.send('I am not in a voice channel.')
         if not vc.is_playing():
             return await ctx.send('I am not playing anything right now.')
         if not vc.is_paused:
@@ -223,7 +234,10 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            return await ctx.send('I am not in a voice channel.')
         if not vc.is_playing():
             return await ctx.send('I am not playing anything right now.')
         if position > vc.track.length:
@@ -250,7 +264,10 @@ class Music(commands.Cog):
             if self.music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            return await ctx.send('I am not in a voice channel.')
         if vc.queue.is_empty:
             return await ctx.send('The queue is empty.')
         queue = vc.queue
@@ -291,7 +308,10 @@ class Music(commands.Cog):
         """Create an embed for the current song."""
         collection = self.mg['discord']['guilds']
         guild = voice_player.guild.id
-        vc: wavelink.Player = voice_player
+        try:
+            vc: wavelink.Player = voice_player
+        except:
+            return
         music_channel = None
         try:
             music_channel = voice_player.guild.get_channel(int(collection.find_one({'guild_id': guild})['music_channel_id']))
@@ -377,7 +397,11 @@ class Music(commands.Cog):
             max_duration = max_duration * 60
             self.max_duration = max_duration
             enabled_message += f' Songs will be limited to {int(max_duration/60)} minutes.'
-        vc: wavelink.Player = self.bot.wavelink.get_player(ctx.guild.id, cls=wavelink.Player, context=ctx)
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            await ctx.send("I am not in a voice channel.")
+            return
         if self.autoplay_:
             self.autoplay_ = False
             await ctx.send('Autoplay has been disabled.')
@@ -396,8 +420,7 @@ class Music(commands.Cog):
             self.autoplay_ = True
             if await self.check_api_key(ctx):
                 await ctx.send(enabled_message)
-                if ctx.voice_client.is_playing():
-                    vc: wavelink.Player = ctx.voice_client
+                if vc.is_playing():
                     track = vc.track
                     for related_video in await self.get_related_videos(track.identifier, ctx.guild.id):
                         try:                            
@@ -496,7 +519,11 @@ class Music(commands.Cog):
         ----------
 
         """
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            await ctx.send("I am not connected to a voice channel.")
+            return
         if self.dj_ids is not None and self.dj_lock:
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
@@ -517,7 +544,11 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            await ctx.send("I am not connected to a voice channel.")
+            return
         if not vc:
             return await ctx.send('I am not connected to a voice channel.')
         await vc.disconnect()
@@ -538,7 +569,11 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            await ctx.send("I am not connected to a voice channel.")
+            return
         if not vc:
             return await ctx.send('I am not connected to a voice channel.')
         if not 0 < volume < 101:
@@ -559,7 +594,11 @@ class Music(commands.Cog):
                 return
         if ctx.author.id not in self.dj_ids:
             self.dj_ids.append(ctx.author.id)
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            await ctx.send("I am not connected to a voice channel.")
+            return
         if not vc:
             try:
                 await ctx.author.voice.channel.connect(cls=wavelink.Player)
@@ -581,7 +620,11 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            await ctx.send("I am not connected to a voice channel.")
+            return
         if not vc:
             return await ctx.send('I am not connected to a voice channel.')
         if not 0 < index <= vc.queue.count:
@@ -620,7 +663,11 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        vc: wavelink.Player = ctx.voice_client
+        try:
+            vc: wavelink.Player = ctx.voice_client
+        except:
+            await ctx.send("I am not connected to a voice channel.")
+            return
         if ctx.author.id not in self.dj_ids:
             self.dj_ids.append(ctx.author.id)
         if self.music_channel is None:
@@ -778,7 +825,11 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        vc: wavelink.Player = ctx.guild.voice_client
+        try:
+            vc: wavelink.Player = ctx.guild.voice_client
+        except AttributeError:
+            await ctx.send("I am not currently in a voice channel.")
+            return
         try:
             track = vc.queue[index - 1]
             del vc.queue._queue[index - 1]
@@ -798,6 +849,10 @@ class Music(commands.Cog):
             if ctx.author.id not in self.dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
+        try:
+            vc: wavelink.Player = ctx.guild.voice_client
+        except:
+            print("no player found")
         if ctx.author.id not in self.dj_ids:
             self.dj_ids.append(ctx.author.id)
         if self.music_channel is None:
