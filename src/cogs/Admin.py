@@ -23,6 +23,7 @@ class Admin(commands.Cog):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             server_address = ('34.171.240.203', 9999)
             sock.connect(server_address)
+            await ctx.send('Connected to server.')
             sock.sendall(command.encode())
             response = sock.recv(1024)
             await ctx.send("Response from server: {}".format(response.decode()))
