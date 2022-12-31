@@ -55,7 +55,7 @@ async def on_ready():
             
             restarted = collection.find_one({'guild_id': guild.id})['restarted']
             if restarted == True or restarted == "True" or restarted == "true":
-                channel = bot.get_channel(collection.find_one({'guild_id': guild.id}['restart_channel_id']))
+                channel = bot.get_channel(collection.find_one({'guild_id': guild.id})['restart_channel_id'])
                 await channel.send("Reconnected!")
                 collection.update_one({'guild_id': guild.id}, {'$set': {'restarted': False}})
     except Exception as e:
