@@ -52,7 +52,8 @@ async def on_ready():
     try:
         for guild in bot.guilds:
             collection = mg['discord']['guilds']
-            restarted = collection.find_one({'guild_id': guild.id}['restarted'])
+            
+            restarted = collection.find_one({'guild_id': guild.id})['restarted']
             if restarted == True or restarted == "True" or restarted == "true":
                 channel = bot.get_channel(collection.find_one({'guild_id': guild.id}['restart_channel_id']))
                 await channel.send("Reconnected!")
