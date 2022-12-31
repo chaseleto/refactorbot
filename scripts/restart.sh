@@ -6,4 +6,4 @@ sudo ./scripts/volumes.sh && \
 export MONGO_USER=$(gcloud secrets versions access latest --secret="MONGO_USER") && \
 export MONGO_PASSWORD=$(gcloud secrets versions access latest --secret="MONGO_PASSWORD") && \
 export DISCORD_SECRET=$(gcloud secrets versions access latest --secret="DISCORD_SECRET") && \
-docker compose -f smoot-compose.yml up -d
+docker compose -f smoot-compose.yml up --force-recreate -d
