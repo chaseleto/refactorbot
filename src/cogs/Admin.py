@@ -19,8 +19,8 @@ class Admin(commands.Cog):
             return
         await ctx.send('Restarting... this process may take up to a minute.')
         try:
-            os.system('gcloud compute ssh discordbot --zone=us-central1-a \
-	        --command="cd refactorbot/scripts && sudo ./restart.sh"')
+            os.system('sudo gcloud compute ssh discordbot --zone=us-central1-a \
+	        --command="cd /refactorbot/scripts && sudo ./restart.sh"')
         except Exception as e:
             await ctx.send(f'Error: {e}')
 
