@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 from pymongo import MongoClient
 import os
-import subprocess
+import socket
 
 class Admin(commands.Cog):
     def __init__(self, bot):
@@ -19,9 +19,14 @@ class Admin(commands.Cog):
             return
         await ctx.send('Restarting... this process may take up to a minute.')
         try:
-            returned_value = subprocess.call('sudo gcloud compute ssh discordbot --zone=us-central1-a \
-	        --command="cd /refactorbot/scripts && sudo ./restart.sh"', shell=True)
-            await ctx.send(f'Returned value: {returned_value}')
+            command = 'restart'
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server_address = ('34.171.240.203', 9999)
+            sock.connect(server_address)
+            sock.sendall(command.encode())
+            response = sock.recv(1024)
+            await ctx.send("Response from server: {}".format(response.decode()))
+            sock.close()
         except Exception as e:
             await ctx.send(f'Error: {e}')
 
