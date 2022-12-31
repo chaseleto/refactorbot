@@ -333,7 +333,7 @@ class Music(commands.Cog):
 
         while datetime.timedelta(seconds=int(vc.position)) < datetime.timedelta(seconds=vc.track.length):
             
-            embed.description = f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}\nVolume: {vc.volume}%\nCurrent DJs: {current_djs}**\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
+            embed.description = f'{vc.track.author}\n\n**Queued by:** {requester}\n**AutoPlay:** {self.autoplay_}\n**Volume:** {vc.volume}%\n**Current DJs:** {current_djs}\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
             try:
                 await msg.edit(embed=embed)
             except:
