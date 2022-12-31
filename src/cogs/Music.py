@@ -311,14 +311,8 @@ class Music(commands.Cog):
         except:
             requester = "AutoPlayed"
             vc.track.requester = "AutoPlayed"
-        current_djs = "None"
-        if self.dj_lock:
-            current_djs = ""
-            for dj in self.dj_ids:
-                current_djs += f"{voice_player.guild.get_member(dj).mention}, "
-            if current_djs == "":
-                current_djs = "None"
-        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}\nVolume: {vc.volume}%\nCurrent DJs: {current_djs}**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
+        
+        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}\nVolume: {vc.volume}%**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
         thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
         embed.set_thumbnail(url=f"{thumb}")
         msg = await music_channel.send(content="ɴᴏᴡ ᴘʟᴀʏɪɴɢ", embed=embed)
@@ -332,7 +326,13 @@ class Music(commands.Cog):
         
 
         while datetime.timedelta(seconds=int(vc.position)) < datetime.timedelta(seconds=vc.track.length):
-            
+            current_djs = "None"
+            if self.dj_lock:
+                current_djs = ""
+                for dj in self.dj_ids:
+                    current_djs += f"{voice_player.guild.get_member(dj).mention}, "
+                if current_djs == "":
+                    current_djs = "None"
             embed.description = f'{vc.track.author}\n\n**Queued by:** {requester}\n**AutoPlay:** {self.autoplay_}\n**Volume:** {vc.volume}%\n**Current DJs:** {current_djs}\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
             try:
                 await msg.edit(embed=embed)

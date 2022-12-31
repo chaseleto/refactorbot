@@ -17,7 +17,7 @@ class Admin(commands.Cog):
     async def restartbot(self, ctx):
         if not ctx.author.id == 238047264839303179:
             return
-        await ctx.send('Restarting... this process may take up to a minute.')
+        await ctx.send('Restarting... this process may take up to 2 minutes.')
         #add restart bool and channel id to database
         try:
             collection = self.mg['discord']['guilds']
