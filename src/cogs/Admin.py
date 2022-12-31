@@ -18,6 +18,17 @@ class Admin(commands.Cog):
         if not ctx.author.id == 238047264839303179:
             return
         await ctx.send('Restarting... this process may take up to a minute.')
+        #add restart bool and channel id to database
+        try:
+            collection = self.mg['discord']['guilds']
+            collection.find_one_and_update({"guild_id": ctx.guild.id},
+                                           {"$set": {"restarted": True, "restart_channel_id": ctx.channel.id}})
+        except:
+            try:
+                collection = self.mg['discord']['guilds']
+                collection.insert_one({"guild_id": ctx.guild.id, "restarted": True, "restart_channel_id": ctx.channel.id})
+            except:
+                await ctx.send("Error adding restart data to database. Bot will still restart but no notification will be sent on successful restart.")
         try:
             command = 'restart'
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

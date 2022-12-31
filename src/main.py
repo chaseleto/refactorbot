@@ -48,6 +48,17 @@ async def on_ready():
             collection.insert_one({'guild_id': guild.id, 'guild_name': guild.name, 'guild_owner': guild.owner.id, 'guild_owner_name': guild.owner.name, 'guild_member_count': guild.member_count, 'guild_created_at': guild.created_at, 'bot_join_date': datetime.datetime.utcnow(), 'has_api_key': False, 'google_api_key': None, 'music_channel_id': None})
     except:
         print("Guild already in database.")
+    #sends reconnect message to the channel that the restartbot command was given in (if it was given)
+    try:
+        for guild in bot.guilds:
+            collection = mg['discord']['guilds']
+            restarted = collection.find_one({'guild_id': guild.id}['restarted'])
+            if restarted == True:
+                channel = bot.get_channel(collection.find_one({'guild_id': guild.id}['restart_channel_id']))
+                await channel.send("Reconnected!")
+                collection.update_one({'guild_id': guild.id}, {'$set': {'restarted': False}})
+    except:
+        print("No restart channel found.")
 #When login is successful
 @bot.event
 async def on_connect():
