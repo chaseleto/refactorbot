@@ -116,7 +116,9 @@ class Music(commands.Cog):
     async def on_wavelink_track_end(self, player: wavelink.Player, track: wavelink.Track, reason: str):
         """Event fired when a track has finished playing."""
         if player.queue.is_empty:
-            dj_ids = []
+            collection = self.mg['discord']['guilds']
+            collection.find_one_and_update({'guild_id': player.guild_id}, {'$set': {'dj_ids': []}})
+            collection.find_one_and_update({'guild_id': player.guild_id}, {'$set': {'dj_lock': False}})
             return await player.disconnect()
         await player.play(player.queue.get())
         
@@ -594,6 +596,8 @@ class Music(commands.Cog):
         await vc.disconnect()
         await ctx.send('Disconnected from the voice channel.')
         vc.queue.clear()
+        collection.find_one_and_update({'guild_id': ctx.guild_id}, {'$set': {'dj_ids': []}})
+        collection.find_one_and_update({'guild_id': ctx.guild_id}, {'$set': {'dj_lock': False}})
         if autoplay: autoplay = False
     
     @commands.command(name='volume', aliases=['vol'])
