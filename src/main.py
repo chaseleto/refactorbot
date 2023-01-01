@@ -65,9 +65,9 @@ async def on_guild_join(guild):
     except:
         print("Guild already in database.")
     #find my server and my channel and send a message to it
-    for guild in bot.guilds:
-        if guild.id == 1058867981268041850:
-            for channel in guild.channels:
+    for guilds in bot.guilds:
+        if guilds.id == 1058867981268041850:
+            for channel in guilds.channels:
                 if channel.id == 1058940782238777345:
                     await channel.send(f"Joined {guild.name}")
 @bot.event
