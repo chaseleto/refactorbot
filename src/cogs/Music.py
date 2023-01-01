@@ -507,7 +507,10 @@ class Music(commands.Cog):
         """Track start event."""
         print("track started")
         collection = self.mg['discord']['guilds']
-        max_duration = int(collection.find_one({'guild_id': player.guild.id})['autoplay_max_duration'])
+        try:
+            max_duration = int(collection.find_one({'guild_id': player.guild.id})['autoplay_max_duration'])
+        except:
+            max_duration = None
         autoplay = collection.find_one({'guild_id': player.guild.id})['autoplay']
         music_channel = None
         await self.now_playing_embed(player)
