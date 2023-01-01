@@ -320,7 +320,10 @@ class Music(commands.Cog):
         dj_lock = collection.find_one({'guild_id': voice_player.guild.id})['dj_lock']
         music_channel = voice_player.guild.get_channel(int(music_channel_id))
         guild = voice_player.guild.id
-        play_tracking_message = music_channel.fetch_message(int(collection.find_one({'guild_id': guild})['play_tracking_message_id']))
+        try:
+            play_tracking_message = music_channel.fetch_message(int(collection.find_one({'guild_id': guild})['play_tracking_message_id']))
+        except:
+            play_tracking_message = None
         try:
             vc: wavelink.Player = voice_player
         except:
@@ -414,7 +417,7 @@ class Music(commands.Cog):
         
         if max_duration:
             max_duration = max_duration * 60
-            collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$set': {'max_autoplay_duration': max_duration}})
+            collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$set': {'autoplay_max_duration': max_duration}})
             enabled_message += f' Songs will be limited to {int(max_duration/60)} minutes.'
         try:
             vc: wavelink.Player = ctx.voice_client
