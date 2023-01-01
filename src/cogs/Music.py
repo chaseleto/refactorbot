@@ -1030,7 +1030,7 @@ class Music(commands.Cog):
         if member.id in dj_ids:
             return
         collection.find_one_and_update({"guild_id": ctx.guild.id}, 
-                                     {"$push": {"dj_ids": ctx.author.id}})
+                                     {"$push": {"dj_ids": member.id}})
         await ctx.send(f"Added {member.name} to the list of DJ's.")
     @commands.command(name='djs', aliases=['ds', 'djslist', 'djlist'])
     async def djs(self, ctx):
@@ -1047,8 +1047,6 @@ class Music(commands.Cog):
             return
         djs = ""
         for dj in dj_ids:
-            print(dj.name)
-            print(dj.id)
             djs += f"{ctx.guild.get_member(dj).mention} "
         await ctx.send(f"DJ's: {djs}")
 async def setup(bot):
