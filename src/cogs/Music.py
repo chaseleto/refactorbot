@@ -1047,7 +1047,7 @@ class Music(commands.Cog):
             return
         djs = ""
         for dj in dj_ids:
-            djs += f"{ctx.guild.get_member(dj).mention}"
+            djs += f"{ctx.guild.get_member(dj).mention} "
         await ctx.send(f"DJ's: {djs}")
 async def setup(bot):
     await bot.add_cog(Music(bot))
