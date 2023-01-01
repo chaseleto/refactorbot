@@ -60,7 +60,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -129,7 +130,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -182,7 +184,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -205,7 +208,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -231,8 +235,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -313,6 +317,7 @@ class Music(commands.Cog):
         autoplay = collection.find_one({'guild_id': voice_player.guild.id})['autoplay']
         music_channel_id = collection.find_one({'guild_id': voice_player.guild.id})['music_channel_id']
         dj_ids = collection.find_one({'guild_id': voice_player.guild.id})['dj_ids']
+        dj_lock = collection.find_one({'guild_id': voice_player.guild.id})['dj_lock']
         music_channel = voice_player.guild.get_channel(int(music_channel_id))
         guild = voice_player.guild.id
         play_tracking_message = music_channel.fetch_message(int(collection.find_one({'guild_id': guild})['play_tracking_message_id']))
@@ -359,7 +364,7 @@ class Music(commands.Cog):
 
         while datetime.timedelta(seconds=int(vc.position)) < datetime.timedelta(seconds=vc.track.length):
             current_djs = "None"
-            if self.dj_lock:
+            if dj_lock:
                 current_djs = ""
                 for dj in dj_ids:
                     current_djs += f"{voice_player.guild.get_member(dj).mention}, "
@@ -539,12 +544,13 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
         try:
             vc: wavelink.Player = ctx.voice_client
         except:
             await ctx.send("I am not connected to a voice channel.")
             return
-        if dj_ids is not None and self.dj_lock:
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -563,7 +569,8 @@ class Music(commands.Cog):
         collection = self.mg['discord']['guilds']
         autoplay = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -590,7 +597,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -615,7 +623,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -645,7 +654,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -690,7 +700,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -736,7 +747,8 @@ class Music(commands.Cog):
     async def on_reaction_add(self, reaction, user):
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': reaction.message.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if user.id not in dj_ids:
                 return
         
@@ -789,7 +801,8 @@ class Music(commands.Cog):
     async def on_reaction_remove(self, reaction, user):
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': reaction.message.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if user.id not in dj_ids:
                 return
         
@@ -873,7 +886,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -899,7 +913,8 @@ class Music(commands.Cog):
         """
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
@@ -962,38 +977,44 @@ class Music(commands.Cog):
         """Locks the queue so only DJ's can add songs."""
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         if ctx.author.id not in dj_ids:
             collection.find_one_and_update({"guild_id": ctx.guild.id}, 
                                      {"$push": {"dj_ids": ctx.author.id}})
-        self.dj_lock = True
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$set": {"dj_lock": True}})
         await ctx.send("Locked the queue.")
     @commands.command(name='unlock', aliases=['ul'])
     async def unlock(self, ctx):
         """Unlocks the queue so anyone can add songs."""
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        self.dj_lock = False
-        dj_ids = []
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$set": {"dj_lock": False}})
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$pull": {"dj_ids": ctx.author.id}})
         await ctx.send("Unlocked the queue.")
     @commands.command(name='dj', aliases=['d', 'allow', 'let'])
     async def dj(self, ctx, member: discord.Member):
         """Adds a member to the list of DJ's."""
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        if dj_ids is not None and self.dj_lock:
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        if dj_ids is None:
-            dj_ids = []
+        if member.id in dj_ids:
+            return
         collection.find_one_and_update({"guild_id": ctx.guild.id}, 
                                      {"$push": {"dj_ids": ctx.author.id}})
         await ctx.send(f"Added {member.name} to the list of DJ's.")
