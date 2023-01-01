@@ -754,7 +754,7 @@ class Music(commands.Cog):
         
         try:
             music_channel = reaction.message.guild.get_channel(int(collection.find_one({'guild_id': reaction.message.guild.id})['music_channel_id']))
-            play_tracking_message = music_channel.fetch_message(int(collection.find_one({'guild_id': reaction.message.guild.id})['play_tracking_message_id']))
+            play_tracking_message = music_channel.fetch_message(collection.find_one({'guild_id': reaction.message.guild.id})['play_tracking_message_id'])
         except:
             print("something went wrong")
             return
