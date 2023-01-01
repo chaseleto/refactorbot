@@ -887,6 +887,8 @@ class Music(commands.Cog):
         if member == self.bot.user:
             if autoplay:
                  autoplay = False
+            collection.find_one_and_update({'guild_id': member.guild_id}, {'$set': {'dj_ids': []}})
+
         else:
             return
     @commands.command(name='remove', aliases=['rm', 'delete', 'del'])
