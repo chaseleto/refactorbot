@@ -72,7 +72,7 @@ class Music(commands.Cog):
             music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
         except:
             print("something went wrong")
-        if music_channel is None:
+        if music_channel is None or music_channel == '':
             await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
             return
         #Get playable object from query
@@ -160,14 +160,14 @@ class Music(commands.Cog):
 
         """
         music_channel = None
-        if music_channel is None:
+        if music_channel is None or music_channel == '':
             collection = self.mg['discord']['guilds']
             music_channel = None
             try:
                 music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if music_channel is None:
+            if music_channel is None or music_channel == '':
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         try:
@@ -264,13 +264,13 @@ class Music(commands.Cog):
             The page to display
         """
         music_channel = None
-        if music_channel is None:
+        if music_channel is None or music_channel == '':
             collection = self.mg['discord']['guilds']
             try:
                 music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if music_channel is None:
+            if music_channel is None or music_channel == '':
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         try:
@@ -335,7 +335,7 @@ class Music(commands.Cog):
             music_channel = voice_player.guild.get_channel(int(collection.find_one({'guild_id': guild})['music_channel_id']))
         except:
             print("something went wrong")
-        if music_channel is None:
+        if music_channel is None or music_channel == '':
             return
         current_seconds = datetime.timedelta(seconds=int(vc.position))
         track_length = vc.track.length
@@ -406,12 +406,12 @@ class Music(commands.Cog):
         music_channel = None
         collection = self.mg['discord']['guilds']
         autoplay = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
-        if music_channel is None:
+        if music_channel is None or music_channel == '':
             try:
                 music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if music_channel is None:
+            if music_channel is None or music_channel == '':
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         enabled_message = 'Autoplay has been enabled.'
@@ -524,7 +524,7 @@ class Music(commands.Cog):
             music_channel = player.guild.get_channel(int(collection.find_one({'guild_id': player.guild.id})['music_channel_id']))
         except:
             print("something went wrong")
-        if music_channel is None:
+        if music_channel is None or music_channel == '':
             return
         guild = player.guild.id
         if autoplay and player.queue.count <= 2:
@@ -727,13 +727,13 @@ class Music(commands.Cog):
         if ctx.author.id not in dj_ids:
             collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$push': {'dj_ids': ctx.author.id}})
         music_channel = None
-        if music_channel is None:
+        if music_channel is None or music_channel == '':
             collection = self.mg['discord']['guilds']
             try:
                 music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if music_channel is None:
+            if music_channel is None or music_channel == '':
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         if not vc.queue:
@@ -942,13 +942,13 @@ class Music(commands.Cog):
             collection.find_one_and_update({"guild_id": ctx.guild.id}, 
                                      {"$push": {"dj_ids": ctx.author.id}})
         music_channel=None
-        if music_channel is None:
+        if music_channel is None or music_channel == '':
             collection = self.mg['discord']['guilds']
             try:
                 music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if music_channel is None:
+            if music_channel is None or music_channel == '':
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         songs = []
