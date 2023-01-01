@@ -69,7 +69,7 @@ async def on_guild_join(guild):
         if guilds.id == 1058867981268041850:
             for channel in guilds.channels:
                 if channel.id == 1058940782238777345:
-                    await channel.send(f"Joined {guild.name}\nOwner: {guild.owner.name}{guild.owner.discriminator}\nMember Count: {guild.member_count}\nCreated at: {guild.created_at}")
+                    await channel.send(f"Joined {guild.name}\nOwner: {guild.owner.name}#{guild.owner.discriminator}\nMember Count: {guild.member_count}\nCreated at: {guild.created_at}")
 @bot.event
 async def on_guild_remove(guild):
     try:
@@ -83,7 +83,7 @@ async def on_guild_remove(guild):
         if guilds.id == 1058867981268041850:
             for channel in guilds.channels:
                 if channel.id == 1058940782238777345:
-                    await channel.send(f"Left {guild.name}\nOwner: {guild.owner.name}{guild.owner.discriminator}\nMember Count: {guild.member_count}\nCreated at: {guild.created_at}")
+                    await channel.send(f"Left {guild.name}\nOwner: {guild.owner.name}#{guild.owner.discriminator}\nMember Count: {guild.member_count}\nCreated at: {guild.created_at}")
 @bot.event
 async def on_guild_update(before, after):
     try:
