@@ -323,7 +323,7 @@ class Music(commands.Cog):
         music_channel = voice_player.guild.get_channel(int(music_channel_id))
         guild = voice_player.guild.id
         try:
-            play_tracking_message = music_channel.fetch_message(int(collection.find_one({'guild_id': guild})['play_tracking_message_id']))
+            play_tracking_message = await music_channel.fetch_message(int(collection.find_one({'guild_id': guild})['play_tracking_message_id']))
         except:
             play_tracking_message = None
         try:
@@ -822,7 +822,7 @@ class Music(commands.Cog):
         
         try:
             music_channel = reaction.message.guild.get_channel(int(collection.find_one({'guild_id': reaction.message.guild.id})['music_channel_id']))
-            play_tracking_message = music_channel.fetch_message(int(collection.find_one({'guild_id': reaction.message.guild.id})['play_tracking_message_id']))
+            play_tracking_message = await music_channel.fetch_message(int(collection.find_one({'guild_id': reaction.message.guild.id})['play_tracking_message_id']))
         except:
             print("something went wrong")
             return
