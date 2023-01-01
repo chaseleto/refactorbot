@@ -404,7 +404,6 @@ class Music(commands.Cog):
         music_channel = None
         collection = self.mg['discord']['guilds']
         autoplay = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
-        max_duration = collection.find_one({'guild_id': ctx.guild.id})['autoplay_max_duration']
         if music_channel is None:
             try:
                 music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
