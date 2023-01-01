@@ -1036,7 +1036,9 @@ class Music(commands.Cog):
     async def djs(self, ctx):
         """Shows the list of DJ's."""
         collection = self.mg['discord']['guilds']
-        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        
+        dj_ids = list(collection.find_one({'guild_id': ctx.guild.id})['dj_ids'])
+
         if dj_ids is None:
             await ctx.send("There are no DJ's.")
             return
