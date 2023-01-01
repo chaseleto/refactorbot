@@ -47,16 +47,7 @@ class Music(commands.Cog):
     #############################################################################################################################################################
     #                                                                         Music Commands                                                                    #
     #############################################################################################################################################################
-    queue = wavelink.Queue()
-    context = None
-    play_tracking = False
-    play_tracking_message = None
-    autoplay_ = False
-    GOOGLE_API_KEY = None
-    max_duration = None
-    music_channel = None
-    dj_lock = False
-    dj_ids = []
+
 
     @commands.command(name='play', aliases=['p'])
     async def play(self, ctx, *, query):
@@ -67,16 +58,17 @@ class Music(commands.Cog):
         query: str
             The name of the song to search from youtube.
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
 
-        collection = self.mg['discord']['guilds']
+        
         music_channel = None
         try:
-            self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
-            music_channel = self.music_channel
+            music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
         except:
             print("something went wrong")
         if music_channel is None:
@@ -88,8 +80,8 @@ class Music(commands.Cog):
         #Check if the bot has a player in the guild
         if not ctx.voice_client:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
-            if ctx.author.id not in self.dj_ids:
-                self.dj_ids.append(ctx.author.id)
+            if ctx.author.id not in dj_ids:
+                collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$push': {'dj_ids': ctx.author.id}})
             await vc.set_volume(50)
         else:
             vc: wavelink.Player = ctx.voice_client
@@ -135,8 +127,10 @@ class Music(commands.Cog):
         ----------
 
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
@@ -161,7 +155,8 @@ class Music(commands.Cog):
         ----------
 
         """
-        if self.music_channel is None:
+        music_channel = None
+        if music_channel is None:
             collection = self.mg['discord']['guilds']
             music_channel = None
             try:
@@ -185,8 +180,10 @@ class Music(commands.Cog):
         ----------
 
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
@@ -206,8 +203,10 @@ class Music(commands.Cog):
         ----------
 
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
@@ -230,8 +229,11 @@ class Music(commands.Cog):
         position: int
             The position in seconds to seek to
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
@@ -255,13 +257,14 @@ class Music(commands.Cog):
         page: int
             The page to display
         """
-        if self.music_channel is None:
+        music_channel = None
+        if music_channel is None:
             collection = self.mg['discord']['guilds']
             try:
-                self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if self.music_channel is None:
+            if music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         try:
@@ -307,7 +310,12 @@ class Music(commands.Cog):
     async def now_playing_embed(self, voice_player):
         """Create an embed for the current song."""
         collection = self.mg['discord']['guilds']
+        autoplay = collection.find_one({'guild_id': voice_player.guild.id})['autoplay']
+        music_channel_id = collection.find_one({'guild_id': voice_player.guild.id})['music_channel_id']
+        dj_ids = collection.find_one({'guild_id': voice_player.guild.id})['dj_ids']
+        music_channel = voice_player.guild.get_channel(int(music_channel_id))
         guild = voice_player.guild.id
+        play_tracking_message = music_channel.fetch_message(int(collection.find_one({'guild_id': guild})['play_tracking_message_id']))
         try:
             vc: wavelink.Player = voice_player
         except:
@@ -323,8 +331,11 @@ class Music(commands.Cog):
         track_length = vc.track.length
         if not vc.is_playing():
             return await music_channel.send('I am not playing anything right now.')
-        if self.play_tracking_message:
-            await self.play_tracking_message.delete()
+        if play_tracking_message:
+            try:
+                await play_tracking_message.delete()
+            except:
+                print("No play tracking message found")
         requester = "Unknown"
         try:
             requester = vc.track.requester.mention
@@ -332,12 +343,13 @@ class Music(commands.Cog):
             requester = "AutoPlayed"
             vc.track.requester = "AutoPlayed"
         
-        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {self.autoplay_}\nVolume: {vc.volume}%**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
+        embed = discord.Embed(title=f'**{vc.track}**', description=f'{vc.track.author}\n\n**Queued by: {requester}\nAutoPlay: {autoplay}\nVolume: {vc.volume}%**\n\n▶️ ({str(current_seconds)}/{str(datetime.timedelta(seconds=vc.track.length))})', color=discord.Color.from_str("#ff0101"), url=str(vc.track.uri))
         thumb = f"http://img.youtube.com/vi/{vc.track.identifier}/hqdefault.jpg"
         embed.set_thumbnail(url=f"{thumb}")
         msg = await music_channel.send(content="ɴᴏᴡ ᴘʟᴀʏɪɴɢ", embed=embed)
-        self.play_tracking_message = msg
-        self.play_tracking = True
+        collection.find_one_and_update({'guild_id': guild}, {'$set': {'play_tracking_message_id': msg.id}})
+        #self.play_tracking_message = msg
+        #self.play_tracking = True
         await msg.add_reaction('⏮')
         await msg.add_reaction('⏪')
         await msg.add_reaction('⏯')
@@ -349,11 +361,11 @@ class Music(commands.Cog):
             current_djs = "None"
             if self.dj_lock:
                 current_djs = ""
-                for dj in self.dj_ids:
+                for dj in dj_ids:
                     current_djs += f"{voice_player.guild.get_member(dj).mention}, "
                 if current_djs == "":
                     current_djs = "None"
-            embed.description = f'{vc.track.author}\n\n**Queued by:** {requester}\n**AutoPlay:** {self.autoplay_}\n**Volume:** {vc.volume}%\n**Current DJs:** {current_djs}\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
+            embed.description = f'{vc.track.author}\n\n**Queued by:** {requester}\n**AutoPlay:** {autoplay}\n**Volume:** {vc.volume}%\n**Current DJs:** {current_djs}\n\n▶️ (__*{datetime.timedelta(seconds=int(vc.position))}/{str(datetime.timedelta(seconds=track_length))}*__) ◀️'
             try:
                 await msg.edit(embed=embed)
             except:
@@ -381,13 +393,15 @@ class Music(commands.Cog):
         max_duration: int
             The maximum duration of songs to add to the queue automatically 
         """
-        if self.music_channel is None:
-            collection = self.mg['discord']['guilds']
+        music_channel = None
+        collection = self.mg['discord']['guilds']
+        autoplay = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
+        if music_channel is None:
             try:
-                self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if self.music_channel is None:
+            if music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         enabled_message = 'Autoplay has been enabled.'
@@ -395,15 +409,15 @@ class Music(commands.Cog):
         
         if max_duration:
             max_duration = max_duration * 60
-            self.max_duration = max_duration
+            collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$set': {'max_autoplay_duration': max_duration}})
             enabled_message += f' Songs will be limited to {int(max_duration/60)} minutes.'
         try:
             vc: wavelink.Player = ctx.voice_client
         except:
             await ctx.send("I am not in a voice channel.")
             return
-        if self.autoplay_:
-            self.autoplay_ = False
+        if autoplay:
+            autoplay = False
             await ctx.send('Autoplay has been disabled.')
             removeList = []
             for song in vc.queue._queue:
@@ -417,7 +431,7 @@ class Music(commands.Cog):
                 except:
                     print(f"failed to remove track {track}")
         else:
-            self.autoplay_ = True
+            autoplay = True
             if await self.check_api_key(ctx):
                 await ctx.send(enabled_message)
                 if vc.is_playing():
@@ -435,12 +449,14 @@ class Music(commands.Cog):
 
             elif not await self.check_api_key(ctx):
                 await ctx.send('Your API key is invalid. Please set it by using the slash command `/set_google_api_key <your key here>`.')
-                self.autoplay_ = False
+                autoplay = False
 
     async def check_api_key(self, ctx):
         """Autoplay."""
-        if self.autoplay_:
-            collection = self.mg['discord']['guilds']
+        collection = self.mg['discord']['guilds']
+        autoplay = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
+        if autoplay:
+            
             api_key = collection.find_one({'guild_id': ctx.guild.id})['google_api_key']
             if api_key:
                 youtube = build('youtube', 'v3', developerKey=api_key)
@@ -483,6 +499,8 @@ class Music(commands.Cog):
         """Track start event."""
         print("track started")
         collection = self.mg['discord']['guilds']
+        max_duration = int(collection.find_one({'guild_id': player.guild.id})['max_autoplay_duration'])
+        autoplay = collection.find_one({'guild_id': player.guild.id})['autoplay']
         music_channel = None
         await self.now_playing_embed(player)
         try:
@@ -492,19 +510,19 @@ class Music(commands.Cog):
         if music_channel is None:
             return
         guild = player.guild.id
-        if self.autoplay_ and player.queue.count <= 2:
+        if autoplay and player.queue.count <= 2:
             related = await self.get_related_videos(track.identifier, guild)
             if not related:
                 await music_channel.send("Could not add related video to queue. This is likely due to exceeding your daily quota of 10,000 units. Please try again tomorrow or update your Google API Key. More: !help autoplay")
-                self.autoplay_ = False
+                autoplay = False
                 return
             for related_video in related:
                 try:
                     track = await wavelink.YouTubeTrack.search("https://www.youtube.com/watch?v=" + related_video, return_first=True)
                     track.requester = "AutoPlayed"
-                    if self.max_duration and track.duration <= self.max_duration:
+                    if max_duration and track.duration <= max_duration:
                         player.queue.put(track)
-                    elif not self.max_duration:
+                    elif not max_duration:
                         player.queue.put(track)
                 except :
                     print("Couldn't add related video to queue.")
@@ -519,13 +537,15 @@ class Music(commands.Cog):
         ----------
 
         """
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
         try:
             vc: wavelink.Player = ctx.voice_client
         except:
             await ctx.send("I am not connected to a voice channel.")
             return
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
 
@@ -540,8 +560,11 @@ class Music(commands.Cog):
         ----------
 
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        autoplay = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
@@ -554,7 +577,7 @@ class Music(commands.Cog):
         await vc.disconnect()
         await ctx.send('Disconnected from the voice channel.')
         vc.queue.clear()
-        if self.autoplay_: self.autoplay_ = False
+        if autoplay: autoplay = False
     
     @commands.command(name='volume', aliases=['vol'])
     async def volume(self, ctx, volume: int):
@@ -565,8 +588,10 @@ class Music(commands.Cog):
         volume: int
             The volume to set the player to. Must be between 1 and 100.
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
@@ -588,12 +613,14 @@ class Music(commands.Cog):
         ----------
 
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        if ctx.author.id not in self.dj_ids:
-            self.dj_ids.append(ctx.author.id)
+        if ctx.author.id not in dj_ids:
+            collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$push': {'dj_ids': ctx.author.id}})
         try:
             vc: wavelink.Player = ctx.voice_client
         except:
@@ -616,8 +643,10 @@ class Music(commands.Cog):
         index: int
             The index of the song to play next.
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
@@ -659,8 +688,10 @@ class Music(commands.Cog):
         query: str
             The query to search for.
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
@@ -668,15 +699,16 @@ class Music(commands.Cog):
         except:
             await ctx.send("I am not connected to a voice channel.")
             return
-        if ctx.author.id not in self.dj_ids:
-            self.dj_ids.append(ctx.author.id)
-        if self.music_channel is None:
+        if ctx.author.id not in dj_ids:
+            collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$push': {'dj_ids': ctx.author.id}})
+        music_channel = None
+        if music_channel is None:
             collection = self.mg['discord']['guilds']
             try:
-                self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if self.music_channel is None:
+            if music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         if not vc.queue:
@@ -702,14 +734,21 @@ class Music(commands.Cog):
         await ctx.send(content='ᴘʟᴀʏɪɴɢ ɴᴇxᴛ', embed=embed)
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-
-        if self.dj_ids is not None and self.dj_lock:
-            if user.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': reaction.message.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if user.id not in dj_ids:
                 return
-
+        
+        try:
+            music_channel = reaction.message.guild.get_channel(int(collection.find_one({'guild_id': reaction.message.guild.id})['music_channel_id']))
+            play_tracking_message = music_channel.fetch_message(int(collection.find_one({'guild_id': reaction.message.guild.id})['play_tracking_message_id']))
+        except:
+            print("something went wrong")
+            return
         if user == self.bot.user:
             return
-        if reaction.message != self.play_tracking_message:
+        if reaction.message != play_tracking_message:
             return
         if reaction.message.guild.voice_client:
             vc: wavelink.Player = reaction.message.guild.voice_client
@@ -748,12 +787,21 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
-        if self.dj_ids is not None and self.dj_lock:
-            if user.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': reaction.message.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if user.id not in dj_ids:
                 return
+        
+        try:
+            music_channel = reaction.message.guild.get_channel(int(collection.find_one({'guild_id': reaction.message.guild.id})['music_channel_id']))
+            play_tracking_message = music_channel.fetch_message(int(collection.find_one({'guild_id': reaction.message.guild.id})['play_tracking_message_id']))
+        except:
+            print("something went wrong")
+            return
         if user == self.bot.user:
             return
-        if reaction.message != self.play_tracking_message:
+        if reaction.message != play_tracking_message:
             return
         if reaction.message.guild.voice_client:
             vc: wavelink.Player = reaction.message.guild.voice_client
@@ -807,9 +855,11 @@ class Music(commands.Cog):
         await interaction.response.send_message("API key passed.", ephemeral=True)
     @commands.Cog.listener()
     async def on_voice_state_update(self, member):
+        collection = self.mg['discord']['guilds']
+        autoplay = collection.find_one({'guild_id': member.guild.id})['autoplay']
         if member == self.bot.user:
-            if self.autoplay_:
-                 self.autoplay_ = False
+            if autoplay:
+                 autoplay = False
         else:
             return
     @commands.command(name='remove', aliases=['rm', 'delete', 'del'])
@@ -821,8 +871,10 @@ class Music(commands.Cog):
         index: int
             The index of the track to remove. Default to last in queue.
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
@@ -845,23 +897,27 @@ class Music(commands.Cog):
         query: str
             The queries to search for.
         """
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         try:
             vc: wavelink.Player = ctx.guild.voice_client
         except:
             print("no player found")
-        if ctx.author.id not in self.dj_ids:
-            self.dj_ids.append(ctx.author.id)
-        if self.music_channel is None:
+        if ctx.author.id not in dj_ids:
+            collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$push": {"dj_ids": ctx.author.id}})
+        music_channel=None
+        if music_channel is None:
             collection = self.mg['discord']['guilds']
             try:
-                self.music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
+                music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
             except:
                 print("something went wrong")
-            if self.music_channel is None:
+            if music_channel is None:
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
         songs = []
@@ -904,46 +960,56 @@ class Music(commands.Cog):
     @commands.command(name='lock', aliases=['l'])
     async def lock(self, ctx):
         """Locks the queue so only DJ's can add songs."""
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        if ctx.author.id not in self.dj_ids:
-            self.dj_ids.append(ctx.author.id)
+        if ctx.author.id not in dj_ids:
+            collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$push": {"dj_ids": ctx.author.id}})
         self.dj_lock = True
         await ctx.send("Locked the queue.")
     @commands.command(name='unlock', aliases=['ul'])
     async def unlock(self, ctx):
         """Unlocks the queue so anyone can add songs."""
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
         self.dj_lock = False
-        self.dj_ids = []
+        dj_ids = []
         await ctx.send("Unlocked the queue.")
     @commands.command(name='dj', aliases=['d', 'allow', 'let'])
     async def dj(self, ctx, member: discord.Member):
         """Adds a member to the list of DJ's."""
-        if self.dj_ids is not None and self.dj_lock:
-            if ctx.author.id not in self.dj_ids:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is not None and self.dj_lock:
+            if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
                 return
-        if self.dj_ids is None:
-            self.dj_ids = []
-        self.dj_ids.append(member.id)
+        if dj_ids is None:
+            dj_ids = []
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$push": {"dj_ids": ctx.author.id}})
         await ctx.send(f"Added {member.name} to the list of DJ's.")
     @commands.command(name='djs', aliases=['ds', 'djslist', 'djlist'])
     async def djs(self, ctx):
         """Shows the list of DJ's."""
-        if self.dj_ids is None:
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        if dj_ids is None:
             await ctx.send("There are no DJ's.")
             return
-        if self.dj_ids == []:
+        if dj_ids == []:
             await ctx.send("There are no DJ's.")
             return
         djs = ""
-        for dj in self.dj_ids:
+        for dj in dj_ids:
             djs += f"{ctx.guild.get_member(dj).mention}"
         await ctx.send(f"DJ's: {djs}")
 async def setup(bot):
