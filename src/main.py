@@ -85,6 +85,13 @@ async def on_guild_remove(guild):
                 if channel.id == 1058940782238777345:
                     await channel.send(f"Left {guild.name}\nOwner: {guild.owner.name}{guild.owner.discriminator}\nMember Count: {guild.member_count}\nCreated at: {guild.created_at}")
 @bot.event
+async def on_guild_update(before, after):
+    try:
+        collection = mg['discord']['guilds']
+        collection.update_one({'guild_id': before.id}, {'$set': {'guild_name': after.name}, '$set': {'guild_owner': after.owner.id}, '$set': {'guild_owner_name': after.owner.name}, '$set': {'guild_member_count': after.member_count}, '$set': {'guild_created_at': after.created_at}})
+    except:
+        print("Guild not in database.")
+@bot.event
 async def on_ready():
     #sends reconnect message to the channel that the restartbot command was given in (if it was given)
     try:
