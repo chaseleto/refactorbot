@@ -64,6 +64,12 @@ async def on_guild_join(guild):
             })
     except:
         print("Guild already in database.")
+    #find my server and my channel and send a message to it
+    for guild in bot.guilds:
+        if guild.id == 1058867981268041850:
+            for channel in guild.channels:
+                if channel.id == 1058940782238777345:
+                    await channel.send(f"Joined {guild.name}")
 @bot.event
 async def on_ready():
     #sends reconnect message to the channel that the restartbot command was given in (if it was given)
