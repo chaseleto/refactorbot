@@ -462,7 +462,12 @@ class Music(commands.Cog):
     async def check_api_key(self, ctx):
         """Autoplay."""
         collection = self.mg['discord']['guilds']
-        autoplay = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
+        try:
+            autoplay_bool = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
+            if autoplay_bool == True or autoplay_bool == 'true':
+                autoplay = True
+        except:
+            print("something went wrong")
         if autoplay:
             
             api_key = collection.find_one({'guild_id': ctx.guild.id})['google_api_key']
