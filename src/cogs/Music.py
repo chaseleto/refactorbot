@@ -596,8 +596,8 @@ class Music(commands.Cog):
         await vc.disconnect()
         await ctx.send('Disconnected from the voice channel.')
         vc.queue.clear()
-        collection.find_one_and_update({'guild_id': ctx.guild_id}, {'$set': {'dj_ids': []}})
-        collection.find_one_and_update({'guild_id': ctx.guild_id}, {'$set': {'dj_lock': False}})
+        collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$set': {'dj_ids': []}})
+        collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$set': {'dj_lock': False}})
         if autoplay: autoplay = False
     
     @commands.command(name='volume', aliases=['vol'])
