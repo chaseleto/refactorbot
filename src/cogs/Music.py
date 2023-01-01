@@ -747,7 +747,7 @@ class Music(commands.Cog):
     async def on_reaction_add(self, reaction, user):
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': reaction.message.guild.id})['dj_ids']
-        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        dj_lock = collection.find_one({'guild_id': reaction.message.guild.id})['dj_lock']
         if dj_ids is not None and dj_lock:
             if user.id not in dj_ids:
                 return
@@ -801,7 +801,7 @@ class Music(commands.Cog):
     async def on_reaction_remove(self, reaction, user):
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': reaction.message.guild.id})['dj_ids']
-        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        dj_lock = collection.find_one({'guild_id': reaction.message.guild.id})['dj_lock']
         if dj_ids is not None and dj_lock:
             if user.id not in dj_ids:
                 return
