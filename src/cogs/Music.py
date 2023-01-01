@@ -404,6 +404,7 @@ class Music(commands.Cog):
         music_channel = None
         collection = self.mg['discord']['guilds']
         autoplay = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
+        max_duration = collection.find_one({'guild_id': ctx.guild.id})['autoplay_max_duration']
         if music_channel is None:
             try:
                 music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
@@ -425,7 +426,7 @@ class Music(commands.Cog):
             await ctx.send("I am not in a voice channel.")
             return
         if autoplay:
-            autoplay = False
+            collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$set': {'autoplay': False}})
             await ctx.send('Autoplay has been disabled.')
             removeList = []
             for song in vc.queue._queue:
@@ -439,7 +440,7 @@ class Music(commands.Cog):
                 except:
                     print(f"failed to remove track {track}")
         else:
-            autoplay = True
+            collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$set': {'autoplay': True}})
             if await self.check_api_key(ctx):
                 await ctx.send(enabled_message)
                 if vc.is_playing():
@@ -457,15 +458,14 @@ class Music(commands.Cog):
 
             elif not await self.check_api_key(ctx):
                 await ctx.send('Your API key is invalid. Please set it by using the slash command `/set_google_api_key <your key here>`.')
-                autoplay = False
+                collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$set': {'autoplay': False}})
 
     async def check_api_key(self, ctx):
         """Autoplay."""
         collection = self.mg['discord']['guilds']
+        autoplay = False
         try:
-            autoplay_bool = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
-            if autoplay_bool == True or autoplay_bool == 'true':
-                autoplay = True
+            autoplay = collection.find_one({'guild_id': ctx.guild.id})['autoplay']
         except:
             print("something went wrong")
         if autoplay:
@@ -765,7 +765,7 @@ class Music(commands.Cog):
         
         try:
             music_channel = reaction.message.guild.get_channel(int(collection.find_one({'guild_id': reaction.message.guild.id})['music_channel_id']))
-            play_tracking_message = music_channel.fetch_message(collection.find_one({'guild_id': reaction.message.guild.id})['play_tracking_message_id'])
+            play_tracking_message = await music_channel.fetch_message(collection.find_one({'guild_id': reaction.message.guild.id})['play_tracking_message_id'])
         except:
             print("something went wrong")
             return
