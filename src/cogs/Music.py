@@ -130,7 +130,8 @@ class Music(commands.Cog):
             if now_playing_msg is not None:
                 try:
                     await asyncio.sleep(5)
-                    await music_channel.fetch_message(now_playing_msg).delete()
+                    msg = await music_channel.fetch_message(now_playing_msg)
+                    await msg.delete()
                 except:
                     print("Message not found")
             return await player.disconnect()
