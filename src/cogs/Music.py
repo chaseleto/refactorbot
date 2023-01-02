@@ -904,7 +904,7 @@ class Music(commands.Cog):
                  autoplay = False
             collection.find_one_and_update({'guild_id': member.guild_id}, {'$set': {'dj_ids': []}})
             collection.find_one_and_update({'guild_id': member.guild_id}, {'$set': {'autoplay': autoplay}})
-            collection.find_one_and_update({'guild_id': member.guild_id}, {'$set': {'djTimer': ''}})
+            collection.find_one_and_update({'guild_id': member.guild_id}, {'$set': {'djTimer': False}})
         try:
             if before.channel is self.bot.user.channel:
                 if len(before.channel.members) == 2:
