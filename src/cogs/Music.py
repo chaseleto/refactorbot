@@ -527,6 +527,7 @@ class Music(commands.Cog):
                     collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'djTimer': None}})
                     collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'dj_ids': []}})
                     collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'dj_lock': False}})
+                    
         except Exception as e:
             print(e)
         try:
@@ -911,8 +912,6 @@ class Music(commands.Cog):
                     await asyncio.sleep(60)
                     await member.guild.voice_client.disconnect()
         except Exception as e:
-            print(f"Unexpected {e=}, {type(e)=}")
-            print("something went wrong")
             return
         else:
             return
@@ -1022,6 +1021,24 @@ class Music(commands.Cog):
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
         dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        try:
+            djCooldownID = collection.find_one({'guild_id': ctx.guild.id})['djCooldownID']
+            djCooldownTime = collection.find_one({'guild_id': ctx.guild.id})['djCooldownTime']
+            if djCooldownID: 
+                if ctx.author.id == djCooldownID:
+                    if datetime.datetime.now() - djCooldownTime < datetime.timedelta(minutes=5):
+                        await ctx.send(f"You are on cooldown. Please wait {(datetime.datetime.now() - djCooldownTime).minutes} minutes To become the only DJ again.")
+                        return
+                    else:
+                        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$set": {"djCooldownID": None}})
+                        collection.find_one_and_update({"guild_id": ctx.guild.id},
+                                        {"$set": {"djCooldownTime": None}})
+        except:
+            pass
+        if dj_lock:
+            await ctx.send("The queue is already locked.")
+            return
         if dj_ids is not None and dj_lock:
             if ctx.author.id not in dj_ids:
                 await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
@@ -1033,7 +1050,11 @@ class Music(commands.Cog):
                                      {"$set": {"dj_lock": True}})
         collection.find_one_and_update({"guild_id": ctx.guild.id}, 
                                      {"$set": {"djTimer": startTime}})
-        await ctx.send("Locked the queue.")
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$set": {"djCooldownID": ctx.author.id}})
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$set": {"djCooldownTime": datetime.datetime.now()}})
+        await ctx.send("Locked the queue. Only DJ's can add songs now. The queue will unlock in 30 minutes. If you want to unlock the queue early, use the .unlock command. To add a DJ, use the .dj @user command. To see a list of DJ's, use the .djs command.")
     @commands.command(name='unlock', aliases=['ul'])
     async def unlock(self, ctx):
         """Unlocks the queue so anyone can add songs."""
@@ -1048,6 +1069,10 @@ class Music(commands.Cog):
                                      {"$set": {"dj_lock": False}})
         collection.find_one_and_update({"guild_id": ctx.guild.id}, 
                                      {"$pull": {"dj_ids": ctx.author.id}})
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$set": {"djTimer": False}})
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$set": {"djCooldownID": False}})
         await ctx.send("Unlocked the queue.")
     @commands.command(name='dj', aliases=['d', 'allow', 'let'])
     async def dj(self, ctx, member: discord.Member):
@@ -1097,6 +1122,6 @@ class Music(commands.Cog):
             timeLeft = timeLeft.seconds
             timeLeft = timeLeft / 60
             timeLeft = round(timeLeft)
-            await ctx.send(f"{timeLeft} minutes left.")
+            await ctx.send(f"DJ's have {timeLeft} minutes left.")
 async def setup(bot):
     await bot.add_cog(Music(bot))
