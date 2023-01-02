@@ -104,7 +104,7 @@ async def on_ready():
                 channel = bot.get_channel(collection.find_one({'guild_id': guild.id})['restart_channel_id'])
                 collection.update_one({'guild_id': guild.id}, {'$set': {'restarted': False}})
                 try:
-                    await channel.send(f"Successfully restarted. Last code change message: ```{retrieve_latest_commit_date_for_github_repository('chaseleto', 'refactorbot')}```")
+                    await channel.send(f"Successfully restarted. Last code change message: ```{retrieve_latest_commit_message_for_github_repository('chaseleto', 'refactorbot')}```")
                 except:
                     await channel.send(f"Successfully restarted. No code change message found.")
 
@@ -113,16 +113,10 @@ async def on_ready():
         print(e)
 
 #Gets last commit message from github
-def retrieve_latest_commit_date_for_github_repository(in_username, in_repository_name):
-    """Retrieves the date of the last commit for the master branch of the user's GitHub repository.
- 
-    :param in_username: Name of user which repository to get last commit for.
-    :param in_repository_name Name of user's repository for which to get last commit for.
-    :return: String containing date of last commit, or None if GitHub request failed.
-    """
+def retrieve_latest_commit_message_for_github_repository(in_username, in_repository_name):
     github_user = "chaseleto"
     github_api_https_connection = httplib.HTTPSConnection('api.github.com')
-    repository_last_commit_date = None
+    repository_last_commit_msg = None
     github_http_request_headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": github_user}
  
     try:
@@ -135,7 +129,7 @@ def retrieve_latest_commit_date_for_github_repository(in_username, in_repository
             # Response was successful, now read and parse the JSON data.
             github_repository_last_commit_response_text = github_repository_last_commit_response.read()
             github_repository_last_commit_response_object = json.loads(github_repository_last_commit_response_text)
-            repository_last_commit_date = github_repository_last_commit_response_object[0]['commit']['message']
+            repository_last_commit_msg = github_repository_last_commit_response_object[0]['commit']['message']
         else:
             message = "ERROR: Request to GitHub failed with status %s and the reason was %s" % \
                       (github_repository_last_commit_response.status,
@@ -144,7 +138,7 @@ def retrieve_latest_commit_date_for_github_repository(in_username, in_repository
     finally:
         github_api_https_connection.close()
  
-    return repository_last_commit_date
+    return repository_last_commit_msg
 
 #When login is successful
 @bot.event

@@ -122,8 +122,8 @@ class Music(commands.Cog):
         """Event fired when a track has finished playing."""
         if player.queue.is_empty:
             collection = self.mg['discord']['guilds']
-            collection.find_one_and_update({'guild_id': player.guild_id}, {'$set': {'dj_ids': []}})
-            collection.find_one_and_update({'guild_id': player.guild_id}, {'$set': {'dj_lock': False}})
+            collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'dj_ids': []}})
+            collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'dj_lock': False}})
             return await player.disconnect()
         await player.play(player.queue.get())
         
