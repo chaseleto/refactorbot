@@ -905,7 +905,7 @@ class Music(commands.Cog):
         try:
             if before.channel is self.bot.user.channel:
                 print("left same channel as bot")
-                if len(before.channel.members) == 1:
+                if len(after.channel.members) == 1:
                     print("no one left in channel")
                     asyncio.sleep(60)
                     await member.guild.voice_client.disconnect()
