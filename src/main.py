@@ -103,7 +103,10 @@ async def on_ready():
             if restarted == True or restarted == "True" or restarted == "true":
                 channel = bot.get_channel(collection.find_one({'guild_id': guild.id})['restart_channel_id'])
                 collection.update_one({'guild_id': guild.id}, {'$set': {'restarted': False}})
-                await channel.send(f"Successfully restarted. Last code change message: {retrieve_latest_commit_date_for_github_repository('chaseleto', 'refactorbot')}")
+                try:
+                    await channel.send(f"Successfully restarted. Last code change message: {retrieve_latest_commit_date_for_github_repository('chaseleto', 'refactorbot')}")
+                except:
+                    await channel.send(f"Successfully restarted. No code change message found.")
 
     except Exception as e:
         print("No restart channel found.")
