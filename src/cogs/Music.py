@@ -903,14 +903,14 @@ class Music(commands.Cog):
             collection.find_one_and_update({'guild_id': member.guild.id}, {'$set': {'autoplay': False}})
             collection.find_one_and_update({'guild_id': member.guild.id}, {'$set': {'djTimer': False}})
         try:
-            if before.channel is self.bot.user.channel:
+            if before.channel == self.bot.user.channel:
                 print("left same channel as bot")
                 if len(after.channel.members) == 1:
                     print("no one left in channel")
                     asyncio.sleep(60)
                     await member.guild.voice_client.disconnect()
         except Exception as e:
-            print(e.with_traceback)
+            print(f"Unexpected {e=}, {type(e)=}")
             print("something went wrong")
             return
         else:
