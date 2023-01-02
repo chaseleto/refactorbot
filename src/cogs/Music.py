@@ -1010,7 +1010,7 @@ class Music(commands.Cog):
                     vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
                     await vc.set_volume(50)
                 except:
-                    await ctx.send("Please join a voice channel first.")
+                    await ctx.send("You are not in a voice channel.")
                     return
             else:
                 vc: wavelink.Player = ctx.voice_client
