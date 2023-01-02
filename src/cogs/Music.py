@@ -1122,6 +1122,9 @@ class Music(commands.Cog):
             timeLeft = timeLeft.seconds
             timeLeft = timeLeft / 60
             timeLeft = round(timeLeft)
-            await ctx.send(f"DJ's have {timeLeft} minutes left.")
+            if timeLeft < 0 or timeLeft > 31: 
+                await ctx.send("Less than a minute left, DJ will update after current song ends.")
+            else:
+                await ctx.send(f"DJ's have {timeLeft} minutes left.")
 async def setup(bot):
     await bot.add_cog(Music(bot))
