@@ -81,7 +81,11 @@ class Music(commands.Cog):
 
         #Check if the bot has a player in the guild
         if not ctx.voice_client:
-            vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+            try:
+                vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+            except AttributeError:
+                await ctx.send("You are not in a voice channel.")
+                return
             if ctx.author.id not in dj_ids:
                 collection.find_one_and_update({'guild_id': ctx.guild.id}, {'$push': {'dj_ids': ctx.author.id}})
             await vc.set_volume(50)
