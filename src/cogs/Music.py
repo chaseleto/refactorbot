@@ -1078,5 +1078,22 @@ class Music(commands.Cog):
         for dj in dj_ids:
             djs += f"{ctx.guild.get_member(dj).mention} "
         await ctx.send(f"DJ's: {djs}")
+    @commands.command(name='djtimer', aliases=['dt'])
+    async def djtimer(self, ctx):
+        """Shows the time left for the DJ's."""
+        collection = self.mg['discord']['guilds']
+        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+        if dj_ids is None or not dj_lock:
+                await ctx.send("Music is not locked.")
+                return
+        if dj_lock:
+            djTimer = collection.find_one({'guild_id': ctx.guild.id})['djTimer']
+            djTimer = djTimer + datetime.timedelta(minutes=30)
+            timeLeft = djTimer - datetime.datetime.now()
+            timeLeft = timeLeft.seconds
+            timeLeft = timeLeft / 60
+            timeLeft = round(timeLeft)
+            await ctx.send(f"{timeLeft} minutes left.")
 async def setup(bot):
     await bot.add_cog(Music(bot))
