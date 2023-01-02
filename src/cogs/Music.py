@@ -899,18 +899,23 @@ class Music(commands.Cog):
         await interaction.response.send_message("API key passed.", ephemeral=True)
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
+        empty_channel = False
         collection = self.mg['discord']['guilds']
         if member == self.bot.user and before.channel is not None and after.channel is None:
             collection.find_one_and_update({'guild_id': member.guild.id}, {'$set': {'dj_ids': []}})
             collection.find_one_and_update({'guild_id': member.guild.id}, {'$set': {'autoplay': False}})
             collection.find_one_and_update({'guild_id': member.guild.id}, {'$set': {'djTimer': False}})
+            return
         try:
             if before.channel == member.guild.voice_client.channel and after.channel is not member.guild.voice_client.channel:
                 print("left same channel as bot")
                 if len(before.channel.members) == 1:
+                    empty_channel = True
                     print("no one left in channel")
                     await asyncio.sleep(60)
-                    await member.guild.voice_client.disconnect()
+                    if len(before.channel.members) == 1:
+                        await member.guild.voice_client.disconnect()
+        
         except Exception as e:
             return
         else:
