@@ -511,8 +511,23 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_wavelink_track_start(self, player: wavelink.Player, track: wavelink.Track):
         """Track start event."""
+
         print("track started")
         collection = self.mg['discord']['guilds']
+        #check djTimer and remove if expired
+        try:
+            djTimer: datetime = collection.find_one({'guild_id': player.guild.id})['djTimer']
+        except Exception as e:
+            print(e)
+            djTimer = None
+        try:
+            if djTimer:
+                if datetime.datetime.now() - djTimer >= datetime.timedelta(minutes=30):
+                    collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'djTimer': None}})
+                    collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'dj_ids': []}})
+                    collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'dj_lock': False}})
+        except Exception as e:
+            print(e)
         try:
             max_duration = int(collection.find_one({'guild_id': player.guild.id})['autoplay_max_duration'])
         except:
@@ -881,14 +896,21 @@ class Music(commands.Cog):
                                  {"$set": {"has_api_key": True}})
         await interaction.response.send_message("API key passed.", ephemeral=True)
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member):
+    async def on_voice_state_update(self, member, before, after):
         collection = self.mg['discord']['guilds']
         autoplay = collection.find_one({'guild_id': member.guild.id})['autoplay']
-        if member == self.bot.user:
+        if member == self.bot.user and before.channel is not None and after.channel is None:
             if autoplay:
                  autoplay = False
             collection.find_one_and_update({'guild_id': member.guild_id}, {'$set': {'dj_ids': []}})
-
+            collection.find_one_and_update({'guild_id': member.guild_id}, {'$set': {'autoplay': autoplay}})
+        try:
+            if before.channel is self.bot.user.channel:
+                if len(before.channel.members) == 2:
+                    await member.guild.voice_client.disconnect()
+                    collection.find_one_and_update({'guild_id': member.guild_id}, {'$set': {'dj_ids': []}})
+        except:
+            return
         else:
             return
     @commands.command(name='remove', aliases=['rm', 'delete', 'del'])
@@ -991,6 +1013,9 @@ class Music(commands.Cog):
     @commands.command(name='lock', aliases=['l'])
     async def lock(self, ctx):
         """Locks the queue so only DJ's can add songs."""
+
+        startTime = datetime.datetime.now()
+
         collection = self.mg['discord']['guilds']
         dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
         dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
@@ -1003,6 +1028,8 @@ class Music(commands.Cog):
                                      {"$push": {"dj_ids": ctx.author.id}})
         collection.find_one_and_update({"guild_id": ctx.guild.id}, 
                                      {"$set": {"dj_lock": True}})
+        collection.find_one_and_update({"guild_id": ctx.guild.id}, 
+                                     {"$set": {"djTimer": startTime}})
         await ctx.send("Locked the queue.")
     @commands.command(name='unlock', aliases=['ul'])
     async def unlock(self, ctx):
