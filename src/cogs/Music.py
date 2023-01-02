@@ -909,8 +909,9 @@ class Music(commands.Cog):
                     print("no one left in channel")
                     asyncio.sleep(60)
                     await member.guild.voice_client.disconnect()
-                    collection.find_one_and_update({'guild_id': member.guild.id}, {'$set': {'dj_ids': []}})
-        except:
+        except Exception as e:
+            print(e.with_traceback)
+            print("something went wrong")
             return
         else:
             return
