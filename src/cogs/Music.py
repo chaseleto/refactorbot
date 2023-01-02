@@ -903,7 +903,7 @@ class Music(commands.Cog):
             collection.find_one_and_update({'guild_id': member.guild.id}, {'$set': {'autoplay': False}})
             collection.find_one_and_update({'guild_id': member.guild.id}, {'$set': {'djTimer': False}})
         try:
-            if before.channel == self.bot.user.channel:
+            if before.channel == member.guild.voice_client.channel and after.channel is not member.guild.voice_client.channel:
                 print("left same channel as bot")
                 if len(after.channel.members) == 1:
                     print("no one left in channel")
