@@ -125,7 +125,8 @@ class Music(commands.Cog):
             collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'dj_ids': []}})
             collection.find_one_and_update({'guild_id': player.guild.id}, {'$set': {'dj_lock': False}})
             now_playing_msg = collection.find_one({'guild_id': player.guild.id})['play_tracking_message_id']
-            music_channel = await player.guild.get_channel(int(collection.find_one({'guild_id': player.guild.id})['music_channel_id']))
+            music_channel_id = int(collection.find_one({'guild_id': player.guild.id})['music_channel_id'])
+            music_channel = player.guild.get_channel(music_channel_id)
             if now_playing_msg is not None:
                 try:
                     await asyncio.sleep(5)
