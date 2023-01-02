@@ -1,4 +1,5 @@
 import math
+import time
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -907,7 +908,7 @@ class Music(commands.Cog):
                 print("left same channel as bot")
                 if len(before.channel.members) == 1:
                     print("no one left in channel")
-                    asyncio.sleep(60)
+                    time.sleep(60)
                     await member.guild.voice_client.disconnect()
         except Exception as e:
             print(f"Unexpected {e=}, {type(e)=}")
