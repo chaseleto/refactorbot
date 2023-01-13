@@ -1156,6 +1156,6 @@ class Music(commands.Cog):
                     return 0
                 else:
                     return i
-        return len(queue)-1
+        return len(queue)
 async def setup(bot):
     await bot.add_cog(Music(bot))
