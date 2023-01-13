@@ -1147,7 +1147,8 @@ class Music(commands.Cog):
                 await ctx.send(f"DJ's have {timeLeft} minutes left.")
     @commands.command(name='test', aliases=['t'])
     async def test(self, ctx):
-        await ctx.send(self.find_index_not_autoplay(ctx.voice_player.queue))
+        vc: wavelink.Player = ctx.voice_client
+        await ctx.send(self.find_index_not_autoplay(vc.queue))
     async def find_index_not_autoplay(self, queue):
         for i, item in enumerate(queue):
             if item.requester == "autoplayed":
