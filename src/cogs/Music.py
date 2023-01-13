@@ -114,7 +114,7 @@ class Music(commands.Cog):
             await vc.play(track)
             await asyncio.sleep(1)
         else:
-            vc.queue.put(track)
+            vc.queue.put_at_index(self.find_index_not_autoplay(vc.queue), track)
             await ctx.send(content="Added to queue:", embed=embed)
     
     @commands.Cog.listener()
@@ -1156,6 +1156,6 @@ class Music(commands.Cog):
                     return 0
                 else:
                     return i-1
-        return 0
+        return len(queue)-1
 async def setup(bot):
     await bot.add_cog(Music(bot))
