@@ -1152,7 +1152,10 @@ class Music(commands.Cog):
     def find_index_not_autoplay(self, queue):
         for i, item in enumerate(queue):
             if item.requester == "AutoPlayed":
-                return i-2
+                if i-1 < 0:
+                    return 0
+                else:
+                    return i-1
         return 0
 async def setup(bot):
     await bot.add_cog(Music(bot))
