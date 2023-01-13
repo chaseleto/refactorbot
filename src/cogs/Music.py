@@ -1145,5 +1145,13 @@ class Music(commands.Cog):
                 await ctx.send("Less than a minute left, DJ will update after current song ends.")
             else:
                 await ctx.send(f"DJ's have {timeLeft} minutes left.")
+    @commands.command(name='test', aliases=['t'])
+    async def test(self, ctx):
+        await ctx.send(self.find_index_not_autoplay(ctx.guild.player.queue))
+    async def find_index_not_autoplay(self, queue):
+        for i, item in enumerate(queue):
+            if item.requester == "autoplayed":
+                return i-2
+        return 0
 async def setup(bot):
     await bot.add_cog(Music(bot))
