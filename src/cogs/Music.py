@@ -1151,7 +1151,7 @@ class Music(commands.Cog):
         await ctx.send(int(self.find_index_not_autoplay(vc.queue)))
     def find_index_not_autoplay(self, queue):
         for i, item in enumerate(queue):
-            if item.requester == "autoplayed":
+            if item.requester == "AutoPlayed":
                 return i-2
         return 0
 async def setup(bot):
