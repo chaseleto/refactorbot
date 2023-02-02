@@ -166,6 +166,13 @@ class Admin(commands.Cog):
         embed.set_image(url=user.display_avatar)
         await ctx.send(embed=embed)
 
+    # CHANGE NAME COLOR COMMAND
+    @commands.command(name="color", description="Changes your name color")
+    async def color(self, ctx, color: discord.Color):
+        await ctx.author.edit(nick=f"[{color}] {ctx.author.name}")
+        await ctx.send(f"Changed your name color to {color}")
+        
+
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))
