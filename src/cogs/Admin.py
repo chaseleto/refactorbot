@@ -168,7 +168,7 @@ class Admin(commands.Cog):
 
     # CHANGE NAME COLOR COMMAND
     @app_commands.command(name="color", description="Changes your name color")
-    async def colorslash(self, interaction: discord.Interaction, color: Color):
+    async def colorslash(self, interaction: discord.Interaction, color: str):
         # creates a role with the color
         role = await interaction.guild.create_role(name=f"{interaction.user.name}'s Color", color=color)
         # adds the role to the user
@@ -176,7 +176,7 @@ class Admin(commands.Cog):
         # sends a message
         await interaction.response.send_message(f"Changed your name color to {color}")
     @commands.command(name="colorme", description="Changes your name color")
-    async def color(self, ctx, color: Color):
+    async def color(self, ctx, color: str):
         # creates a role with the color
         role = await ctx.guild.create_role(name=f"{ctx.author.name}'s Color", color=color)
         # adds the role to the user
