@@ -60,12 +60,15 @@ class Music(commands.Cog):
             The name of the song to search from youtube.
         """
         collection = self.mg['discord']['guilds']
-        dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
-        dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
-        if dj_ids is not None and dj_lock:
-            if ctx.author.id not in dj_ids:
-                await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
-                return
+        try:
+            dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
+            dj_lock = collection.find_one({'guild_id': ctx.guild.id})['dj_lock']
+            if dj_ids is not None and dj_lock:
+                if ctx.author.id not in dj_ids:
+                    await ctx.send("You are not a DJ. Please ask a DJ to add you to the list of DJ's.")
+                    return
+        except:
+            print("something went wrong")
 
         
         music_channel = None
