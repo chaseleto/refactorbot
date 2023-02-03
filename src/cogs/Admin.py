@@ -178,6 +178,7 @@ class Admin(commands.Cog):
     @commands.command(name="colorme", description="Changes your name color")
     async def color(self, ctx, color: str):
         # creates a role with the color
+        color = discord.Color(value=int(color.strip("#"), 16))
         role = await ctx.guild.create_role(name=f"{ctx.author.name}'s Color", color=color)
         # adds the role to the user
         await ctx.author.add_roles(role)
