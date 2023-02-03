@@ -169,13 +169,13 @@ class Admin(commands.Cog):
     # CHANGE NAME COLOR COMMAND
     @app_commands.command(name="color", description="Changes your name color")
     async def color(self, interaction: discord.Interaction, color: discord.Color):
-        await interaction.user.edit(nick=f"[{color}] {interaction.user.name}")
+        # creates a role with the color
+        role = await interaction.guild.create_role(name=f"{interaction.user.name}'s Color", color=color)
+        # adds the role to the user
+        await interaction.user.add_roles(role)
+        # sends a message
         await interaction.response.send_message(f"Changed your name color to {color}")
-
-        # permission error 
-        # discord.errors.Forbidden: 403 Forbidden (error code: 50013): Missing Permissions
-        if discord.errors.Forbidden:
-            await interaction.response.send_message("I don't have the permissions to do that")
+        
 
 
 async def setup(bot):
