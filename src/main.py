@@ -140,6 +140,17 @@ def retrieve_latest_commit_message_for_github_repository(in_username, in_reposit
  
     return repository_last_commit_msg
 
+
+#command to send message to all guilds general channels
+@bot.command()
+async def send(ctx, *, message):
+    if ctx.author.id == 238047264839303179:
+        for guild in bot.guilds:
+            for channel in guild.channels:
+                if channel.name == "general" or channel.name == "𝙂𝙀𝙉𝙀𝙍𝘼𝙇":
+                    await channel.send(message)
+    else:
+        await ctx.send("You do not have permission to use this command.")
 #When login is successful
 @bot.event
 async def on_connect():

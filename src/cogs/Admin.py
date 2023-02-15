@@ -184,7 +184,9 @@ class Admin(commands.Cog):
         await ctx.author.add_roles(role)
         # sends a message
         await ctx.send(f"Changed your name color to {color}")
-
+    @commands.command(name="untimeout", description="Changes your name color")
+    async def untimeout(self, ctx, user: discord.Member):
+        pass
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))
