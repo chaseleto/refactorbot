@@ -46,5 +46,5 @@ class tracker(commands.Cog):
 
         await ctx.send(", ".join(match_stats))
 
-    async def setup(bot):
-        await bot.add_cog(tracker(bot))
+async def setup(bot):
+    await bot.add_cog(tracker(bot))
