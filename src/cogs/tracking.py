@@ -110,7 +110,7 @@ class tracker(commands.Cog):
                     win_status = 'Victory' if win else 'Defeat'
 
             # Add a new field to the embed with the champion name, KDA, and win status
-                    field_name = f"{idx+1}. {champion_name} \n| {queueType} |"
+                    field_name = f"{idx+1}. {champion_name} \n[{queueType}]"
                     embed.add_field(name=field_name, value=f'{kda}\n{win_status}', inline=True)
                     champ_count[champion_name] = champ_count.get(champion_name, 0) + 1
         if champ_count:
