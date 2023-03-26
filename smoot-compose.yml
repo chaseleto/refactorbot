@@ -26,6 +26,7 @@ services:
       DISCORD_SECRET: ${DISCORD_SECRET}
       MONGO_USER: ${MONGO_USER}
       MONGO_PASSWORD: ${MONGO_PASSWORD}
+      LOLAPI: ${LOLAPI}
     command: >
       bash -c '
         apt update -y && \
