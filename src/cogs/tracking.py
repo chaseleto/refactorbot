@@ -15,13 +15,9 @@ class tracker(commands.Cog):
     async def track(self, ctx, *, message):
         lol_watcher = LolWatcher('RGAPI-954e69d4-4c5d-4c07-b548-412f0f98010b')
         my_region = 'na1'
-        try:
-            me = lol_watcher.summoner.by_name(my_region, message)
-        except ApiError as err:
-            if err.response.status_code == 404:
-                await ctx.send(f'{message} is not a summoner in NA')
-            else:
-                raise
+        
+        me = lol_watcher.summoner.by_name(my_region, message)
+        
 
         try:
             spectator = lol_watcher.spectator.by_summoner(my_region, me['id'])
