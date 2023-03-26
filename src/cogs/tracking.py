@@ -71,8 +71,8 @@ class tracker(commands.Cog):
         most_played_champ = ""
         champ_count = {}
         embed = discord.Embed(title=f"{message} | {rank}", color=color, description=ingame, url=f"https://na.op.gg/summoner/userName={message}")
-        for idx, match in enumerate(my_matches[:10]):
-            match_detail = lol_watcher.match.by_id(my_region, match)
+        for idx, match1 in enumerate(my_matches[:10]):
+            match_detail = lol_watcher.match.by_id(my_region, match1)
             #print(match_detail)
             queueType = ''
             queueId = match_detail['info']['queueId']
