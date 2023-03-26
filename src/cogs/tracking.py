@@ -11,7 +11,7 @@ import re
 import sys
 from riotwatcher import LolWatcher, ApiError
 class tracker(commands.Cog):
-    @commands.command(name='track', aliases=['tra'])
+    @commands.command(name='lol', aliases=['league', 'opgg', 'track'])
     async def track(self, ctx, *, message):
         waitmsg = await ctx.send("Please wait... if this message does not go away there was an error. Summoner names are case sensitive.")
         lol_watcher = LolWatcher(os.environ['LOLAPI'])
