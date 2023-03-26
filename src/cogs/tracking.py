@@ -13,12 +13,26 @@ from riotwatcher import LolWatcher, ApiError
 class tracker(commands.Cog):
     @commands.command(name='lol', aliases=['league', 'opgg', 'track'])
     async def track(self, ctx, *, message):
-        waitmsg = await ctx.send("Please wait... if this message does not go away there was an error. Summoner names are case sensitive.")
+        waitmsg = await ctx.send("Retrieving data...")
         lol_watcher = LolWatcher(os.environ['LOLAPI'])
         my_region = 'na1'
         ingame = "Not in game"
         color = 0xFF0000
-        me = lol_watcher.summoner.by_name(my_region, message)
+        try:
+            me = lol_watcher.summoner.by_name(my_region, message)
+            summoner_id = me['id']
+        except ApiError as err:
+            if err.response.status_code == 404:
+                await waitmsg.edit(content=f'Summoner {message} does not exist.')
+                return
+            elif err.response.status_code == 403:
+                await waitmsg.edit(content=f'API Key has expired or otherwise unauthorized. Please contact the bot owner.')
+                return
+            else:
+                await waitmsg.edit(content=f'Unable to retrieve data.')
+                asyncio.sleep(5)
+                await waitmsg.delete()
+                return
         current_champ = ""
         patch = "https://ddragon.leagueoflegends.com/cdn/13.6.1/data/en_US/champion.json"
         rank = lol_watcher.league.by_summoner(my_region, me['id'])
@@ -35,10 +49,10 @@ class tracker(commands.Cog):
                 data = json.loads(response.text)
             for player in spectator['participants']:
                 if player['summonerName'] == message:
-                    print(player['championId'])
+                    #print(player['championId'])
                     for champ in data['data']:
                         if data['data'][champ]['key'] == str(player['championId']):
-                            print(data['data'][champ]['name'])
+                            #print(data['data'][champ]['name'])
                             current_champ = data['data'][champ]['name']
             ingame = "In game"
             color = 0x00FF00
@@ -50,28 +64,40 @@ class tracker(commands.Cog):
                 raise
 
         my_matches = lol_watcher.match.matchlist_by_puuid(my_region, me['puuid'])
-
-        match_stats = []
-        for match in my_matches[:10]:
-            match_detail = lol_watcher.match.by_id(my_region, match)
-            for player in match_detail['info']['participants']:
-                if player['summonerName'] == message:
-                    result = "Won" if player['win'] else "Lost"
-                    kills, deaths, assists = player['kills'], player['deaths'], player['assists']
-                    match_stats.append(f"{player['championName']}: {result} ({kills}/{deaths}/{assists})")
-        print(match_stats)
-        #await ctx.send("Last 10 games\n " + ",\n ".join(match_stats))
-
-
-
+        #print(my_matches)
+        if not my_matches:
+            await waitmsg.edit(content=f'{message} has not played any games recently or does not exist.')
+            return
         most_played_champ = ""
         champ_count = {}
         embed = discord.Embed(title=f"{message} | {rank}", color=color, description=ingame, url=f"https://na.op.gg/summoner/userName={message}")
         for idx, match in enumerate(my_matches[:10]):
             match_detail = lol_watcher.match.by_id(my_region, match)
+            #print(match_detail)
+            queueType = ''
+            queueId = match_detail['info']['queueId']
+            match queueId:
+                case 0:
+                    queueType = "Custom"
+                case 430:
+                    queueType = "Blind Pick"
+                case 420:
+                    queueType = "Ranked Solo"
+                case 32:
+                    queueType = "Co-op vs AI Beginner"
+                case 33:
+                    queueType = "Co-op vs AI Intermediate"
+                case 400:
+                    queueType = "Draft Pick"
+                case 440:
+                    queueType = "Ranked Flex"
+                case 450:
+                    queueType = "ARAM"
+                case 700:
+                    queueType = "Clash"
             for player in match_detail['info']['participants']:
         # Check if the player is Ozu
-                if player['summonerName'] == message:
+                if player['summonerId'] == summoner_id:
             # Get the champion name and KDA
                     champion_name = player['championName']
                     kills = player['kills']
@@ -84,7 +110,7 @@ class tracker(commands.Cog):
                     win_status = 'Won' if win else 'Lost'
 
             # Add a new field to the embed with the champion name, KDA, and win status
-                    field_name = f"{idx+1}. {champion_name}"
+                    field_name = f"{idx+1}. {champion_name} \n | {queueType}"
                     embed.add_field(name=field_name, value=f'{kda}\n{win_status}', inline=True)
                     champ_count[champion_name] = champ_count.get(champion_name, 0) + 1
         if champ_count:
@@ -93,12 +119,12 @@ class tracker(commands.Cog):
         if len(champ_count) == 10:
             match_detail = lol_watcher.match.by_id(my_region, my_matches[0])
             for player in match_detail['info']['participants']:
-                if player['summonerName'] == message:
+                if player['summonerId'] == summoner_id:
                     most_played_champ = player['championName']
 
         if current_champ:
             most_played_champ = current_champ
-        print(f"https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{most_played_champ}_0.jpg")
+
         embed.set_image(url=f"https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{most_played_champ}_0.jpg")
         await waitmsg.edit(content="", embed=embed)
 
