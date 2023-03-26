@@ -23,7 +23,9 @@ class tracker(commands.Cog):
         patch = "https://ddragon.leagueoflegends.com/cdn/13.6.1/data/en_US/champion.json"
         rank = lol_watcher.league.by_summoner(my_region, me['id'])
         try:
-            rank = rank[0]['tier'] + ' ' + rank[0]['rank']
+            for i in rank:
+                if i['queueType'] == 'RANKED_SOLO_5x5':
+                    rank = i['tier'] + ' ' + i['rank']
         except:
             rank = "Unranked"
         try:
