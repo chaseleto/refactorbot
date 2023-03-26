@@ -10,7 +10,7 @@ import random
 import re
 import sys
 from riotwatcher import LolWatcher, ApiError
-class tracker(commands.Cog):
+class tracking(commands.Cog):
     @commands.command(name='lol', aliases=['league', 'opgg', 'track'])
     async def track(self, ctx, *, message):
         waitmsg = await ctx.send("Retrieving data...")
@@ -129,4 +129,4 @@ class tracker(commands.Cog):
         await waitmsg.edit(content="", embed=embed)
 
 async def setup(bot):
-    await bot.add_cog(tracker(bot))
+    await bot.add_cog(tracking(bot))
