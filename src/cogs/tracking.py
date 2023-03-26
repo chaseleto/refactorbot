@@ -76,25 +76,26 @@ class tracker(commands.Cog):
             #print(match_detail)
             queueType = ''
             queueId = match_detail['info']['queueId']
-            match queueId:
-                case 0:
-                    queueType = "Custom"
-                case 430:
-                    queueType = "Blind Pick"
-                case 420:
-                    queueType = "Ranked Solo"
-                case 32:
-                    queueType = "Co-op vs AI Beginner"
-                case 33:
-                    queueType = "Co-op vs AI Intermediate"
-                case 400:
-                    queueType = "Draft Pick"
-                case 440:
-                    queueType = "Ranked Flex"
-                case 450:
-                    queueType = "ARAM"
-                case 700:
-                    queueType = "Clash"
+            if queueId == 0:
+                queueType = "Custom"
+            elif queueId == 430:
+                queueType = "Blind Pick"
+            elif queueId == 420:
+                queueType = "Ranked Solo"
+            elif queueId == 32:
+                queueType = "Co-op vs AI Beginner"
+            elif queueId == 33:
+                queueType = "Co-op vs AI Intermediate"
+            elif queueId == 400:
+                queueType = "Draft Pick"
+            elif queueId == 440:
+                queueType = "Ranked Flex"
+            elif queueId == 450:
+                queueType = "ARAM"
+            elif queueId == 700:
+                queueType = "Clash"
+            else:
+                queueType = "Unknown"
             for player in match_detail['info']['participants']:
         # Check if the player is Ozu
                 if player['summonerId'] == summoner_id:
