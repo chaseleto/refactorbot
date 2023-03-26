@@ -20,8 +20,8 @@ class tracker(commands.Cog):
         me = lol_watcher.summoner.by_name(my_region, message)
         current_champ = ""
         patch = "https://ddragon.leagueoflegends.com/cdn/13.6.1/data/en_US/champion.json"
-        summoner = lol_watcher.league.by_summoner(my_region, me['id'])
-        rank = summoner[0]['tier'] + ' ' + summoner[0]['rank']
+        rank = lol_watcher.league.by_summoner(my_region, me['id'])
+        rank = rank[0]['tier'] + ' ' + rank[0]['rank']
         try:
             spectator = lol_watcher.spectator.by_summoner(my_region, me['id'])
             response = requests.get(patch)
