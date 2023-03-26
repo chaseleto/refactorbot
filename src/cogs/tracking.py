@@ -13,6 +13,7 @@ from riotwatcher import LolWatcher, ApiError
 class tracker(commands.Cog):
     @commands.command(name='track', aliases=['tra'])
     async def track(self, ctx, *, message):
+        waitmsg = await ctx.send("Please wait... if this message does not go away there was an error. Summoner names are case sensitive.")
         lol_watcher = LolWatcher(os.environ['LOLAPI'])
         my_region = 'na1'
         ingame = "Not in game"
@@ -94,7 +95,7 @@ class tracker(commands.Cog):
             most_played_champ = current_champ
         print(f"https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{most_played_champ}_0.jpg")
         embed.set_image(url=f"https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{most_played_champ}_0.jpg")
-        await ctx.send(embed=embed)
+        await waitmsg.edit(content="", embed=embed)
 
 async def setup(bot):
     await bot.add_cog(tracker(bot))
