@@ -40,7 +40,7 @@ class tracker(commands.Cog):
                     kills, deaths, assists = player['kills'], player['deaths'], player['assists']
                     match_stats.append(f"{player['championName']}: {result} ({kills}/{deaths}/{assists})")
 
-        await ctx.send("Last 10 games" + ", ".join(match_stats))
+        await ctx.send("Last 10 games" + ",\n ".join(match_stats))
 
 async def setup(bot):
     await bot.add_cog(tracker(bot))
