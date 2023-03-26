@@ -16,17 +16,16 @@ class tracker(commands.Cog):
         waitmsg = await ctx.send("Please wait... if this message does not go away there was an error. Summoner names are case sensitive.")
         lol_watcher = LolWatcher(os.environ['LOLAPI'])
         my_region = 'na1'
-        default_rank = "Unranked"
         ingame = "Not in game"
         color = 0xFF0000
         me = lol_watcher.summoner.by_name(my_region, message)
         current_champ = ""
         patch = "https://ddragon.leagueoflegends.com/cdn/13.6.1/data/en_US/champion.json"
+        rank = lol_watcher.league.by_summoner(my_region, me['id'])
         try:
-            rank = lol_watcher.league.by_summoner(my_region, me['id'])
-            default_rank = rank[0]['tier'] + ' ' + rank[0]['rank']
+            rank = rank[0]['tier'] + ' ' + rank[0]['rank']
         except:
-            pass
+            rank = "Unranked"
         try:
             spectator = lol_watcher.spectator.by_summoner(my_region, me['id'])
             response = requests.get(patch)
@@ -65,7 +64,7 @@ class tracker(commands.Cog):
 
         most_played_champ = ""
         champ_count = {}
-        embed = discord.Embed(title=f"{message} | {default_rank}", color=color, description=ingame, url=f"https://na.op.gg/summoner/userName={message}")
+        embed = discord.Embed(title=f"{message} | {rank}", color=color, description=ingame, url=f"https://na.op.gg/summoner/userName={message}")
         for idx, match in enumerate(my_matches[:10]):
             match_detail = lol_watcher.match.by_id(my_region, match)
             for player in match_detail['info']['participants']:
