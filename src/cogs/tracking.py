@@ -4,11 +4,6 @@ import asyncio
 import requests
 import json
 import os
-import time
-import datetime
-import random
-import re
-import sys
 from riotwatcher import LolWatcher, ApiError
 class tracker(commands.Cog):
     @commands.command(name='lol', aliases=['league', 'opgg', 'track'])
@@ -41,6 +36,8 @@ class tracker(commands.Cog):
                 if i['queueType'] == 'RANKED_SOLO_5x5':
                     rank = i['tier'] + ' ' + i['rank']
         except:
+            rank = "Unranked"
+        if rank == []:
             rank = "Unranked"
         try:
             spectator = lol_watcher.spectator.by_summoner(my_region, me['id'])
