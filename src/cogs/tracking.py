@@ -13,6 +13,8 @@ class tracker(commands.Cog):
         my_region = 'na1'
         ingame = "Not in game"
         color = 0xFF0000
+        wins = 0
+        losses = 0
         try:
             me = lol_watcher.summoner.by_name(my_region, message)
             summoner_id = me['id']
@@ -35,6 +37,8 @@ class tracker(commands.Cog):
             for i in rank:
                 if i['queueType'] == 'RANKED_SOLO_5x5':
                     rank = i['tier'] + ' ' + i['rank']
+                    wins = i['wins']
+                    losses = i['losses']
         except:
             rank = "Unranked"
         if rank == []:
