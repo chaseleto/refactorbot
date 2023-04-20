@@ -5,6 +5,7 @@ import requests
 import json
 import os
 from riotwatcher import LolWatcher, ApiError
+from urllib.parse import quote
 class tracker(commands.Cog):
     @commands.command(name='lol', aliases=['league', 'opgg', 'track'])
     async def track(self, ctx, *, message):
@@ -71,7 +72,8 @@ class tracker(commands.Cog):
             return
         most_played_champ = ""
         champ_count = {}
-        embed = discord.Embed(title=f"{message} | {rank}\nWins: {wins} Losses: {losses}", color=color, description=ingame, url=f"https://na.op.gg/summoner/userName={message}")
+        message_encoded = quote(message)
+        embed = discord.Embed(title=f"{message} | {rank}\nWins: {wins} Losses: {losses}", color=color, description=ingame, url=f"https://na.op.gg/summoner/userName={message_encoded}")
         for idx, match1 in enumerate(my_matches[:10]):
             match_detail = lol_watcher.match.by_id(my_region, match1)
             #print(match_detail)
