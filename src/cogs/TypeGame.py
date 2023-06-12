@@ -45,7 +45,7 @@ class TypeGame(commands.Cog):
             elif difficulty == "hard":
                 self.entry = random.choice(typegame["hard"])
             self.avg_word_length = await self.get_avg_word_length()
-
+            #test
             await ctx.send(f"In 5 seconds I will send a prompt. Type it as fast as you can. You will have {self.timer} seconds to type it. Scores will be posted after the game ends. Good luck!")
             await asyncio.sleep(5)
             await ctx.send(f"{self.entry}")
