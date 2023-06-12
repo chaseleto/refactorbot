@@ -70,6 +70,7 @@ class tracker(commands.Cog):
         if not my_matches:
             await waitmsg.edit(content=f'{message} has not played any games recently or does not exist.')
             return
+        #test
         most_played_champ = ""
         champ_count = {}
         message_encoded = quote(message)
