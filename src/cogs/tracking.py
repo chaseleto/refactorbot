@@ -32,7 +32,7 @@ class tracker(commands.Cog):
                 await waitmsg.delete()
                 return
         current_champ = ""
-        patch = "https://ddragon.leagueoflegends.com/cdn/13.6.1/data/en_US/champion.json"
+        patch = f"https://ddragon.leagueoflegends.com/cdn/{get_current_patch()}/data/en_US/champion.json"
         rank = lol_watcher.league.by_summoner(my_region, me['id'])
         try:
             for i in rank:
@@ -132,6 +132,10 @@ class tracker(commands.Cog):
 
         embed.set_image(url=f"https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{most_played_champ}_0.jpg")
         await waitmsg.edit(content="", embed=embed)
-
+def get_current_patch():
+    response = requests.get('https://ddragon.leagueoflegends.com/api/versions.json')
+    if response.status_code == 200:
+        data = json.loads(response.text)
+    return data[0]
 async def setup(bot):
     await bot.add_cog(tracker(bot))
