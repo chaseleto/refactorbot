@@ -61,6 +61,7 @@ class Music(commands.Cog):
         """
 
         #Check if the user is in a voice channel
+        #Check if the user is a DJ
         collection = self.mg['discord']['guilds']
         try:
             dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
