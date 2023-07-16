@@ -79,7 +79,9 @@ class Music(commands.Cog):
             return
         #Get playable object from query
         track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
-
+        #test comment 1 
+        #test comment 2
+        #test comment 3
         #Check if the bot has a player in the guild
         if not ctx.voice_client:
             try:
