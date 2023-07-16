@@ -59,7 +59,6 @@ class Music(commands.Cog):
         query: str
             The name of the song to search from youtube.
         """
-        #new line
         collection = self.mg['discord']['guilds']
         try:
             dj_ids = collection.find_one({'guild_id': ctx.guild.id})['dj_ids']
