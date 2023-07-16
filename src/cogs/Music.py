@@ -71,7 +71,7 @@ class Music(commands.Cog):
         except:
             print("something went wrong")
 
-        
+        #new comment here   to test
         music_channel = None
         try:
             music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
