@@ -78,6 +78,7 @@ class Music(commands.Cog):
             await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
             return
         #Get playable object from query
+        #new test comment
         track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
         #Check if the bot has a player in the guild
         if not ctx.voice_client:
