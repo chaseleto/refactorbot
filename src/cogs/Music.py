@@ -109,7 +109,7 @@ class Music(commands.Cog):
         )
         track.requester = ctx.author
         #Add track to queue or play if queue is empty and not playing
-        
+        print("test.. ignore this if you see it somehow")
         if not vc.is_playing() and vc.queue.is_empty:
             await vc.play(track)
             await asyncio.sleep(1)
