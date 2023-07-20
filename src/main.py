@@ -95,6 +95,7 @@ async def on_guild_update(before, after):
 @bot.event
 async def on_ready():
     #sends reconnect message to the channel that the restartbot command was given in (if it was given)
+    #new comment for testing cl
     try:
         for guild in bot.guilds:
             collection = mg['discord']['guilds']
