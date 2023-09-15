@@ -14,7 +14,7 @@ logger.setLevel(logging.ERROR)
 handler = logging.FileHandler(filename='/home/src/discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
-
+#test
 #config
 with open('/home/src/config/cfg.yml', 'r') as f:
     config = yaml.safe_load(f)
