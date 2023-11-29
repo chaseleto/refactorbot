@@ -119,7 +119,7 @@ def retrieve_latest_commit_message_for_github_repository(in_username, in_reposit
     github_api_https_connection = httplib.HTTPSConnection('api.github.com')
     repository_last_commit_msg = None
     github_http_request_headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": github_user}
- 
+ #test
     try:
         # Request only the one last commit for the supplied user's repository with supplied name.
         github_request_path = "/repos/" + in_username + "/" + in_repository_name + "/commits?page=1&per_page=1"
