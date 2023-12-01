@@ -6,3 +6,4 @@
 12/27/2022
   - Added additional capability to add multiple songs to queue at once .. e.g .add song1, song2, song3
   - Volume now visible in now playing messages
+d
