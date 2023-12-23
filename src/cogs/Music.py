@@ -110,7 +110,6 @@ class Music(commands.Cog):
         )
         track.requester = ctx.author
         # track to queue or play if queue is empty and not playing
-        print("test.. ignore this if you see it somehow")
         if not vc.is_playing() and vc.queue.is_empty:
             await vc.play(track)
             await asyncio.sleep(1)
@@ -133,8 +132,8 @@ class Music(commands.Cog):
                     await asyncio.sleep(5)
                     msg = await music_channel.fetch_message(now_playing_msg)
                     await msg.delete()
-                except:
-                    print("Message not found")
+                except Exception as e:
+                    print(e)
             return await player.disconnect()
         await player.play(player.queue.get())
         
@@ -284,8 +283,8 @@ class Music(commands.Cog):
             collection = self.mg['discord']['guilds']
             try:
                 music_channel = ctx.guild.get_channel(int(collection.find_one({'guild_id': ctx.guild.id})['music_channel_id']))
-            except:
-                print("something went wrong")
+            except Exception as e:
+                print(e)
             if music_channel is None or music_channel == '':
                 await ctx.send("Please set a music channel by using the /setup_music slash command and selecting the desired channel.")
                 return
